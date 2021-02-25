@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# Custom:
+docs/課題：ToDoリスト用REST API (1).pdf
