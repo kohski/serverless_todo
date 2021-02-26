@@ -1,2 +1,8 @@
 -e .
 pytest
+moto==1.3.14
+pytest-mock
+pytest-freezegun
+pytest-cov
+jsonschema
+ulid-py

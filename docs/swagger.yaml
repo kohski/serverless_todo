@@ -1,4 +1,4 @@
-swagger: "3.0"
+swagger: "2.0"
 info:
   description: Serverless Todo list
   version: 1.0.0
@@ -141,7 +141,7 @@ definitions:
       content:
         type: string
         example: "テキストの100ページまでやる"
-        minLength: 1
+        minLength: 0
         maxLength: 2000
       is_done:
         type: boolean
