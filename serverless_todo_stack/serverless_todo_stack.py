@@ -10,10 +10,14 @@ class TodoStack(core.Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # The code that defines your stack goes here
-        cognito.UserPool(
+        userpool = cognito.UserPool(
             self,
             "ServerlessTodoUserPool",
             user_pool_name="ServerlessTodoUserPool",
+            sign_in_aliases=cognito.SignInAliases(
+                username=True,
+                email=True
+            ),
             password_policy=cognito.PasswordPolicy(
                 min_length=6,
                 require_digits=True,
@@ -40,3 +44,10 @@ class TodoStack(core.Stack):
                 )
             )
         )
+        userpool.add_client(
+            "UserPoolClient",
+            auth_flows=cognito.AuthFlow(
+                admin_user_password=True
+            )
+        )
+
