@@ -80,6 +80,12 @@ class TestValidation:
         with pytest.raises(ValidationError):
             Task(**params)
 
+    def test_raise_title_is_none(self, single_typical_task):
+        params = deepcopy(single_typical_task)
+        params["title"] = None
+        with pytest.raises(ValidationError):
+            Task(**params)
+
     def test_valid_title_is_100chars(self, single_typical_task):
         params = deepcopy(single_typical_task)
         params["title"] = "a" * 100
@@ -91,11 +97,15 @@ class TestValidation:
         with pytest.raises(ValidationError):
             Task(**params)
 
-    def test_raise_contet_is_blunk(self, single_typical_task):
+    def test_valid_contet_is_blunk(self, single_typical_task):
         params = deepcopy(single_typical_task)
         params["content"] = ""
-        with pytest.raises(ValidationError):
-            Task(**params)
+        assert Task(**params)
+
+    def test_valid_contet_is_none(self, single_typical_task):
+        params = deepcopy(single_typical_task)
+        params["content"] = None
+        assert Task(**params)
 
     def test_valid_content_is_2000chars(self, single_typical_task):
         params = deepcopy(single_typical_task)
