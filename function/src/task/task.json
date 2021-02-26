@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task",
+  "description": "Task validate",
+  "type": "object",
+  "required": [
+    "id",
+    "meta",
+    "title",
+    "is_done",
+    "priority",
+    "created_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Task:{user_id: uuid}:{task_id: ulid}",
+      "pattern": "^Task:[0-9a-z-]{36}:[0-9A-Z]{26}$"
+    },
+    "meta": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "content": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "is_done": {
+      "type": "boolean"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "created_at": {
+      "type": "number"
+    },
+    "updated_at": {
+      "type": "number"
+    }
+  }
+}
