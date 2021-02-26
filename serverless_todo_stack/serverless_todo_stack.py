@@ -1,4 +1,7 @@
-from aws_cdk import core
+from aws_cdk import (
+    aws_cognito as cognito,
+    core
+)
 
 
 class TodoStack(core.Stack):
@@ -7,3 +10,44 @@ class TodoStack(core.Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # The code that defines your stack goes here
+        userpool = cognito.UserPool(
+            self,
+            "ServerlessTodoUserPool",
+            user_pool_name="ServerlessTodoUserPool",
+            sign_in_aliases=cognito.SignInAliases(
+                username=True,
+                email=True
+            ),
+            password_policy=cognito.PasswordPolicy(
+                min_length=6,
+                require_digits=True,
+                require_lowercase=True,
+                require_symbols=True,
+                require_uppercase=True,
+                temp_password_validity=core.Duration.days(7)
+            ),
+            auto_verify=cognito.AutoVerifiedAttrs(
+                email=True
+            ),
+            standard_attributes=cognito.StandardAttributes(
+                email=cognito.StandardAttribute(
+                    mutable=True,
+                    required=True
+                ),
+                family_name=cognito.StandardAttribute(
+                    mutable=True,
+                    required=True
+                ),
+                given_name=cognito.StandardAttribute(
+                    mutable=True,
+                    required=True
+                )
+            )
+        )
+        userpool.add_client(
+            "UserPoolClient",
+            auth_flows=cognito.AuthFlow(
+                admin_user_password=True
+            )
+        )
+
