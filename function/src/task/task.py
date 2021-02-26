@@ -1,3 +1,8 @@
+import json
+from jsonschema import validate, ValidationError
+import os
+
+
 class Task:
 
     def __init__(
@@ -10,7 +15,7 @@ class Task:
         priority: str = 'medium',
         is_done: str = False,
         content: str = None,
-        is_validation: bool = True
+        needs_validation: bool = True
     ):
         self.id = id
         self.meta = meta
@@ -20,6 +25,16 @@ class Task:
         self.priority = priority
         self.created_at = created_at
         self.updated_at = updated_at
+
+        try:
+            if needs_validation:
+                with open(os.path.dirname(__file__) + '/task.json') as f:
+                    schema = json.load(f)
+                    validate(vars(self), schema)
+        except ValidationError as e:
+            raise e
+        except Exception as e:
+            raise e
 
     def save():
         pass
