@@ -20,6 +20,7 @@ setuptools.setup(
 
     install_requires=[
         "aws-cdk.core==1.88.0",
+        "aws-cdk.aws_cognito==1.88.0",
     ],
 
     python_requires=">=3.6",
