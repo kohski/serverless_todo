@@ -25,6 +25,10 @@ class Task:
         self.priority = priority
         self.created_at = created_at
         self.updated_at = updated_at
+        for_search = ''
+        for_search += title if title is not None else ''
+        for_search += content if content is not None else ''
+        self.for_search = for_search
 
         try:
             if needs_validation:
