@@ -50,4 +50,3 @@ class TodoStack(core.Stack):
                 admin_user_password=True
             )
         )
-

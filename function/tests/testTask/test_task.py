@@ -2,6 +2,8 @@ import pytest
 from copy import deepcopy
 from task import Task
 from jsonschema import ValidationError
+import boto3
+import os
 
 PRIORITY_LIST = [
     "high",
@@ -28,7 +30,7 @@ def is_done_params(request):
 @pytest.fixture
 def typical_task(priority_params, is_done_params):
     return {
-        "id": "Task:b3117b67-b21b-4360-bf4c-0720dcca07c3:01EZF4KKWT0E55RCA50ER4KADX",
+        "id": "Task:aaaaaaaa-aaaa-aaaa-aaaa-111111111111:ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
         "created_at": 1614342166,
         "updated_at": 1614342166,
@@ -42,7 +44,7 @@ def typical_task(priority_params, is_done_params):
 @pytest.fixture
 def single_typical_task():
     return {
-        "id": "Task:b3117b67-b21b-4360-bf4c-0720dcca07c3:01EZF4KKWT0E55RCA50ER4KADX",
+        "id": "Task:aaaaaaaa-aaaa-aaaa-aaaa-111111111111:ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
         "created_at": 1614342166,
         "updated_at": 1614342166,
@@ -66,13 +68,17 @@ class TestTaskConstructor:
         assert hasattr(task, "priority")
         assert hasattr(task, "is_done")
         assert hasattr(task, "content")
+        assert hasattr(task, "for_search")
 
 
 class TestValidation:
 
     def test_valid_typical_task(self, typical_task):
         task = Task(**typical_task)
-        assert vars(task) == typical_task
+        copied_task = deepcopy(typical_task)
+        copied_task["for_search"] = copied_task["title"] + \
+            copied_task["content"]
+        assert vars(task) == copied_task
 
     def test_raise_title_is_blunk(self, single_typical_task):
         params = deepcopy(single_typical_task)
