@@ -30,7 +30,7 @@ def is_done_params(request):
 @pytest.fixture
 def typical_task(priority_params, is_done_params):
     return {
-        "id": "Task:existing_user_id:ABCDEFGHIJKLMNOPQRSTUVW000",
+        "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
         "created_at": 1614342166,
         "updated_at": 1614342166,
@@ -44,7 +44,7 @@ def typical_task(priority_params, is_done_params):
 @pytest.fixture
 def single_typical_task():
     return {
-        "id": "Task:existing_user_id:ABCDEFGHIJKLMNOPQRSTUVW000",
+        "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
         "created_at": 1614342166,
         "updated_at": 1614342166,
@@ -141,20 +141,21 @@ class TestGet:
 
     def test_get_existing_id(self, create_init_ddb_data):
         user_id = "existing_user_id"
-        task_id = "ABCDEFGHIJKLMNOPQRSTUVWXYZ000"
+        task_id = "ABCDEFGHIJKLMNOPQRSTUVW000"
         response = Task.get(
             user_id,
             task_id
         )
-        assert response == {
-            "id": "Task:existing_user_id:ABCDEFGHIJKLMNOPQRSTUVWXYZ000",
+        assert vars(response) == {
+            "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
             "title": "件名A",
             "created_at": Decimal("1614342166"),
             "updated_at": Decimal("1614342166"),
             "meta": "latest",
             "priority": "high",
             "is_done": True,
-            "content": "内容A"
+            "content": "内容A",
+            "for_search": "件名A内容A",
         }
 
     def test_raise_not_existing_id(self, create_init_ddb_data):

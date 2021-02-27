@@ -1,8 +1,10 @@
 import json
 from jsonschema import validate, ValidationError
+import boto3
+from botocore.exceptions import ClientError
 import os
 import logging
-import boto3
+from decimal import Decimal
 
 logging.basicConfig(level=logging.INFO)
 
@@ -58,21 +60,40 @@ class Task:
 
     @classmethod
     def get(cls, user_id, task_id):
-        item = table.get_item(
-            Key={
-                'id': "Task:{}:{}".format(user_id, task_id),
-                'meta': 'latest'
-            }
-        )
-        if 'Item' in item:
-            return item['Item']
-        else:
-            raise TaskNotFoundError
+        try:
+            item = table.get_item(
+                Key={
+                    'id': "Task:{}:{}".format(user_id, task_id),
+                    'meta': 'latest'
+                }
+            )
+            if 'Item' in item:
+                item['Item']['id'] = task_id
+                task = cls(**item['Item'])
+                return task
+            else:
+                raise TaskNotFoundError
+        except TaskNotFoundError as e:
+            logging.error(e)
+            raise e
+        except ClientError as e:
+            logging.error(e)
+            raise e
+        except Exception as e:
+            raise e
 
     def update():
         pass
 
-    def to_object(self):
+    def to_returnable_object(self):
+        if hasattr(self, 'created_at'):
+            self.created_at = float(self.created_at)
+        if hasattr(self, 'updated_at'):
+            self.updated_at = float(self.updated_at)
+        if hasattr(self, 'for_search'):
+            del self.for_search
+        if hasattr(self, 'meta'):
+            del self.meta
         return vars(self)
 
     @classmethod
