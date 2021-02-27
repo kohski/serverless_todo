@@ -75,9 +75,7 @@ def ddb_setup(start_ddb_moto_mock):
 
 
 @pytest.fixture(autouse=True)
-def create_init_ddb_data(
-    ddb_setup
-):
+def create_init_ddb_data(ddb_setup):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(os.environ['TABLE_NAME'])
 
