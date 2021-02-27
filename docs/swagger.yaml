@@ -131,8 +131,8 @@ definitions:
     properties:
       id:
         type: string
-        description: user_id
-        example: latest
+        description: ulid
+        example: "ABCDEFGHIJKLMNOPQRSTUVW000"
       title:
         type: string
         example: 宿題をする

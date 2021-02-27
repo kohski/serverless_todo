@@ -34,7 +34,7 @@ def typical_task(priority_params, is_done_params):
         "title": "タイトル",
         "created_at": 1614342166,
         "updated_at": 1614342166,
-        "meta": 'latest',
+        "meta": "existing_user_id",
         "priority": priority_params,
         "is_done": is_done_params,
         "content": "内容"
@@ -48,7 +48,7 @@ def single_typical_task():
         "title": "タイトル",
         "created_at": 1614342166,
         "updated_at": 1614342166,
-        "meta": 'latest',
+        "meta": "existing_user_id",
         "priority": 'medium',
         "is_done": False,
         "content": "内容"
@@ -151,7 +151,7 @@ class TestGet:
             "title": "件名A",
             "created_at": Decimal("1614342166"),
             "updated_at": Decimal("1614342166"),
-            "meta": "latest",
+            "meta": "existing_user_id",
             "priority": "high",
             "is_done": True,
             "content": "内容A",

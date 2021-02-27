@@ -122,11 +122,11 @@ def create_init_ddb_data(ddb_setup):
 
     for id, item in enumerate(db_items):
         item = {
-            "id": "Task:{}:ABCDEFGHIJKLMNOPQRSTUVW{}".format(item['user_id'], str(id).zfill(3)),
+            "id": "Task:ABCDEFGHIJKLMNOPQRSTUVW{}".format(str(id).zfill(3)),
             "title": item['title'],
             "created_at": 1614342166,
             "updated_at": 1614342166,
-            "meta": 'latest',
+            "meta": item['user_id'],
             "priority": item['priority'],
             "is_done": item['is_done'],
             "content": item['content']

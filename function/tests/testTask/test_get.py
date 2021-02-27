@@ -109,6 +109,7 @@ def test_existing_task_and_requested_by_task_owner(event, context, request_param
         'statusCode': 200,
         'body': json.dumps({
             "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
+            "meta": "existing_user_id",
             "title": "件名A",
             "content": "内容A",
             "is_done": True,

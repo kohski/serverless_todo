@@ -24,7 +24,7 @@ class Task:
         title: str,
         created_at: str,
         updated_at: str,
-        meta: str = 'latest',
+        meta: str,
         priority: str = 'medium',
         is_done: str = False,
         content: str = None,
@@ -63,8 +63,8 @@ class Task:
         try:
             item = table.get_item(
                 Key={
-                    'id': "Task:{}:{}".format(user_id, task_id),
-                    'meta': 'latest'
+                    'id': "Task:{}".format(task_id),
+                    'meta': user_id
                 }
             )
             if 'Item' in item:
@@ -92,8 +92,6 @@ class Task:
             self.updated_at = float(self.updated_at)
         if hasattr(self, 'for_search'):
             del self.for_search
-        if hasattr(self, 'meta'):
-            del self.meta
         return vars(self)
 
     @classmethod
