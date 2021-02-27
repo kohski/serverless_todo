@@ -14,8 +14,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "Task:{user_id: uuid}:{task_id: ulid}",
-      "pattern": "^Task:[0-9a-z-]{36}:[0-9A-Z]{26}$"
+      "description": "Task:{user_id}:{task_id: ulid}",
+      "pattern": "^Task:.+:[0-9A-Z]{26}$"
     },
     "meta": {
       "type": "string"

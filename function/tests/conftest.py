@@ -91,8 +91,8 @@ def create_init_ddb_data(ddb_setup):
     ]
 
     USER_ID_LIST = [
-        "aaaaaaaa-aaaa-aaaa-aaaa-111111111111",
-        "bbbbbbbb-bbbb-bbbb-bbbb-222222222222"
+        "existing_user_id",
+        "other_user_id"
     ]
 
     TITLE_LIST = [
