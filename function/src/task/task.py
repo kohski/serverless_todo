@@ -5,6 +5,8 @@ from botocore.exceptions import ClientError
 import os
 import logging
 from decimal import Decimal
+from datetime import datetime
+import ulid
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,15 +26,15 @@ class Task:
 
     def __init__(
         self,
-        id: str,
         title: str,
         owner: str,
-        created_at: str,
-        updated_at: str,
-        meta: str,
+        id: str = None,
+        meta: str = 'latest',
         priority: str = 'medium',
         is_done: str = False,
         content: str = None,
+        created_at: int = None,
+        updated_at: int = None,
         needs_validation: bool = True
     ):
         self.id = id
@@ -61,8 +63,26 @@ class Task:
             logging.error(e)
             raise e
 
-    def save():
-        pass
+    def save(self):
+        if self.id is None:
+            self.id = str(ulid.new())
+            self.created_at = int(datetime.now().timestamp())
+            self.updated_at = int(datetime.now().timestamp())
+            item = self.to_savable_object()
+            item['id'] = 'Task:{}'.format(self.id)
+        else:
+            pass
+        try:
+            table.put_item(
+                Item=item,
+                ConditionExpression='attribute_not_exists(id)'
+            )
+        except ClientError as e:
+            logging.error(e)
+            raise e
+        except Exception as e:
+            logging.error(e)
+            raise e
 
     @classmethod
     def get(cls, user_id, task_id):
@@ -91,9 +111,6 @@ class Task:
         except Exception as e:
             raise e
 
-    def update():
-        pass
-
     def to_returnable_object(self):
         if hasattr(self, 'created_at'):
             self.created_at = float(self.created_at)
@@ -101,6 +118,13 @@ class Task:
             self.updated_at = float(self.updated_at)
         if hasattr(self, 'for_search'):
             del self.for_search
+        return vars(self)
+
+    def to_savable_object(self):
+        if hasattr(self, 'created_at') and self.created_at is not None:
+            self.created_at = Decimal(str(self.created_at))
+        if hasattr(self, 'updated_at') and self.updated_at is not None:
+            self.updated_at = Decimal(str(self.updated_at))
         return vars(self)
 
     @classmethod

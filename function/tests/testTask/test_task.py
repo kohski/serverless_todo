@@ -1,9 +1,12 @@
 import pytest
 from copy import deepcopy
 from task import Task, TaskNotFoundError, NotTaskOwnerError
+import task
 from jsonschema import ValidationError
 from decimal import Decimal
-
+from datetime import datetime
+import os
+import boto3
 
 PRIORITY_LIST = [
     "high",
@@ -15,6 +18,24 @@ IS_DONE_LIST = [
     True,
     False
 ]
+
+DUMMY_ULID = 'ABCDEFGHIJKLMNOPQRSTUVW999'
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(os.environ['TABLE_NAME'])
+
+
+@pytest.fixture()
+def ulid_mock(mocker):
+    def prepare_response():
+        return 'ABCDEFGHIJKLMNOPQRSTUVW999'
+    ulid_mock = mocker.Mock()
+    ulid_mock.new.side_effect = prepare_response
+    mocker.patch.object(
+        task,
+        "ulid",
+        ulid_mock
+    )
 
 
 @pytest.fixture(params=PRIORITY_LIST)
@@ -178,3 +199,35 @@ class TestGet:
                 user_id,
                 task_id
             )
+
+
+class TestSave:
+    def test_save_typical_task(self, create_init_ddb_data, ulid_mock):
+        task = Task(**{
+            "id": None,
+            "title": "件名A",
+            "meta": "latest",
+            'owner': 'existing_user_id',
+            "priority": "high",
+            "is_done": True,
+            "content": "内容A"
+        })
+        task.save()
+        item = table.get_item(
+            Key={
+                'id': 'Task:ABCDEFGHIJKLMNOPQRSTUVW999',
+                'meta': 'latest'
+            }
+        )
+        assert item['Item'] == {
+            "id": "Task:ABCDEFGHIJKLMNOPQRSTUVW999",
+            "meta": "latest",
+            "title": "件名A",
+            "owner": "existing_user_id",
+            "content": "内容A",
+            "is_done": True,
+            "priority": "high",
+            "created_at": Decimal("1614870000"),
+            "updated_at": Decimal("1614870000"),
+            "for_search": "件名A内容A"
+        }
