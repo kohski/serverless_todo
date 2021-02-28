@@ -50,6 +50,10 @@ def ddb_setup(start_ddb_moto_mock):
             {
                 "AttributeName": "meta",
                 "AttributeType": "S"
+            },
+            {
+                "AttributeName": "owner",
+                "AttributeType": "S"
             }
         ],
         BillingMode='PAY_PER_REQUEST',
@@ -69,15 +73,29 @@ def ddb_setup(start_ddb_moto_mock):
                 "Projection": {
                     "ProjectionType": "ALL"
                 }
+            },
+            {
+                "IndexName": "owner-meta-index",
+                "KeySchema": [
+                    {
+                        "AttributeName": "owner",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "meta",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                }
             }
         ]
     )
 
 
 @pytest.fixture(autouse=True)
-def create_init_ddb_data(
-    ddb_setup
-):
+def create_init_ddb_data(ddb_setup):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(os.environ['TABLE_NAME'])
 
@@ -93,8 +111,8 @@ def create_init_ddb_data(
     ]
 
     USER_ID_LIST = [
-        "aaaaaaaa-aaaa-aaaa-aaaa-111111111111",
-        "bbbbbbbb-bbbb-bbbb-bbbb-222222222222"
+        "existing_user_id",
+        "other_user_id"
     ]
 
     TITLE_LIST = [
@@ -124,11 +142,12 @@ def create_init_ddb_data(
 
     for id, item in enumerate(db_items):
         item = {
-            "id": "Task:{}:ABCDEFGHIJKLMNOPQRSTUVWXYZ{}".format(item['user_id'], str(id).zfill(3)),
+            "id": "Task:ABCDEFGHIJKLMNOPQRSTUVW{}".format(str(id).zfill(3)),
             "title": item['title'],
+            "owner": item['user_id'],
             "created_at": 1614342166,
             "updated_at": 1614342166,
-            "meta": 'latest',
+            "meta": "latest",
             "priority": item['priority'],
             "is_done": item['is_done'],
             "content": item['content']

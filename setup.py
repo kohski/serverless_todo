@@ -21,6 +21,11 @@ setuptools.setup(
     install_requires=[
         "aws-cdk.core==1.88.0",
         "aws-cdk.aws_cognito==1.88.0",
+        "aws-cdk.aws_dynamodb==1.88.0",
+        "aws-cdk.aws_logs==1.88.0",
+        "aws-cdk.aws_codedeploy==1.88.0",
+        "aws-cdk.aws_iam==1.88.0",
+        "aws-cdk.aws_apigateway==1.88.0",
     ],
 
     python_requires=">=3.6",

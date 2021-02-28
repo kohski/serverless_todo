@@ -6,6 +6,7 @@
   "required": [
     "id",
     "meta",
+    "owner",
     "title",
     "is_done",
     "priority",
@@ -14,13 +15,18 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "Task:{user_id: uuid}:{task_id: ulid}",
-      "pattern": "^Task:[0-9a-z-]{36}:[0-9A-Z]{26}$"
+      "description": "ulid",
+      "pattern": "^[0-9A-Z]{26}$"
     },
     "meta": {
       "type": "string"
     },
     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "owner": {
       "type": "string",
       "minLength": 1,
       "maxLength": 100

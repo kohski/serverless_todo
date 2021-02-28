@@ -1,9 +1,9 @@
 import pytest
 from copy import deepcopy
-from task import Task
+from task import Task, TaskNotFoundError, NotTaskOwnerError
 from jsonschema import ValidationError
-import boto3
-import os
+from decimal import Decimal
+
 
 PRIORITY_LIST = [
     "high",
@@ -30,11 +30,12 @@ def is_done_params(request):
 @pytest.fixture
 def typical_task(priority_params, is_done_params):
     return {
-        "id": "Task:aaaaaaaa-aaaa-aaaa-aaaa-111111111111:ABCDEFGHIJKLMNOPQRSTUVW000",
+        "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
+        "owner": "latest",
         "created_at": 1614342166,
         "updated_at": 1614342166,
-        "meta": 'latest',
+        "meta": "latest",
         "priority": priority_params,
         "is_done": is_done_params,
         "content": "内容"
@@ -44,11 +45,12 @@ def typical_task(priority_params, is_done_params):
 @pytest.fixture
 def single_typical_task():
     return {
-        "id": "Task:aaaaaaaa-aaaa-aaaa-aaaa-111111111111:ABCDEFGHIJKLMNOPQRSTUVW000",
+        "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
+        "owner": "existing_user_id",
         "created_at": 1614342166,
         "updated_at": 1614342166,
-        "meta": 'latest',
+        "meta": "latest",
         "priority": 'medium',
         "is_done": False,
         "content": "内容"
@@ -135,3 +137,44 @@ class TestValidation:
         params["is_done"] = "dummy"
         with pytest.raises(ValidationError):
             Task(**params)
+
+
+class TestGet:
+
+    def test_get_existing_id(self, create_init_ddb_data):
+        user_id = "existing_user_id"
+        task_id = "ABCDEFGHIJKLMNOPQRSTUVW000"
+        response = Task.get(
+            user_id,
+            task_id
+        )
+        assert vars(response) == {
+            "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
+            "title": "件名A",
+            "created_at": Decimal("1614342166"),
+            "updated_at": Decimal("1614342166"),
+            "meta": "latest",
+            'owner': 'existing_user_id',
+            "priority": "high",
+            "is_done": True,
+            "content": "内容A",
+            "for_search": "件名A内容A",
+        }
+
+    def test_raise_exsiting_and_not_owned_task(self, create_init_ddb_data):
+        user_id = "existing_user_id"
+        task_id = "ABCDEFGHIJKLMNOPQRSTUVW004"
+        with pytest.raises(NotTaskOwnerError):
+            Task.get(
+                user_id,
+                task_id
+            )
+
+    def test_raise_not_existing_id(self, create_init_ddb_data):
+        user_id = "dummy_user_id"
+        task_id = "DUMMY_TASK_ID"
+        with pytest.raises(TaskNotFoundError):
+            Task.get(
+                user_id,
+                task_id
+            )
