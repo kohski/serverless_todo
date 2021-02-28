@@ -257,3 +257,40 @@ class TodoStack(core.Stack):
             authorization_type=apigw.AuthorizationType.COGNITO,
             authorizer=cognito_authorizer,
         )
+
+        # -----------------------------------
+        #           delete handler
+        # -----------------------------------
+        delete_resource_base_name = "deleteTaskFunction"
+        delete_task_func = lambda_.Function(self, delete_resource_base_name,
+                                            code=lambda_.Code.from_asset('function/src/task',
+                                                                         bundling=core.BundlingOptions(
+                                                                             image=lambda_.Runtime.PYTHON_3_8.bundling_docker_image,
+                                                                             command=[
+                                                                                 'bash', '-c', 'pip install -r requirements.txt -t /asset-output && cp -a . /asset-output'],
+                                                                         )),
+                                            handler="delete.lambda_handler",
+                                            runtime=lambda_.Runtime.PYTHON_3_8,
+                                            environment=env,
+                                            tracing=lambda_.Tracing.ACTIVE,
+                                            timeout=core.Duration.seconds(
+                                                29),
+                                            memory_size=512
+                                            )
+
+        delete_task_func.add_to_role_policy(statement=iam.PolicyStatement(
+            actions=['dynamodb:*'], resources=[dynamodbTable.table_arn, dynamodbTable.table_arn + '/*']))
+        logs.LogGroup(self, delete_resource_base_name + 'LogGroup',
+                      log_group_name='/aws/lambda/' + delete_task_func.function_name,
+                      retention=logs.RetentionDays.TWO_WEEKS
+                      )
+
+        delete_task_integration = apigw.LambdaIntegration(
+            delete_task_func,
+            credentials_role=api_role
+        )
+        task_id_path.add_method(
+            "DELETE", integration=delete_task_integration,
+            authorization_type=apigw.AuthorizationType.COGNITO,
+            authorizer=cognito_authorizer,
+        )
