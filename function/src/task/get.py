@@ -1,13 +1,9 @@
 import logging
 import json
-from task import Task
+from task import Task, TaskNotFoundError, NotTaskOwnerError
 
 
 class UserNotFoundError(Exception):
-    pass
-
-
-class TaskNotFoundError(Exception):
     pass
 
 
@@ -19,6 +15,7 @@ def lambda_handler(event, context):
     else:
         return {
             'statusCode': 401,
+            'body': 'invalid token',
             'isBase64Encoded': False
         }
 
@@ -28,13 +25,36 @@ def lambda_handler(event, context):
     else:
         return {
             'statusCode': 400,
+            'body': 'invalid request',
             'isBase64Encoded': False
         }
 
-    raw_task = Task.get(user_id, task_id)
-    task = raw_task.to_returnable_object()
-    return {
-        'statusCode': 200,
-        'body': json.dumps(task),
-        'isBase64Encoded': False
-    }
+    try:
+        raw_task = Task.get(user_id, task_id)
+        task = raw_task.to_returnable_object()
+        return {
+            'statusCode': 200,
+            'body': json.dumps(task),
+            'isBase64Encoded': False
+        }
+    except TaskNotFoundError as e:
+        logging.error(e)
+        return {
+            'statusCode': 404,
+            'body': 'task is not found',
+            'isBase64Encoded': False
+        }
+    except NotTaskOwnerError as e:
+        logging.error(e)
+        return {
+            'statusCode': 403,
+            'body': 'not task owner',
+            'isBase64Encoded': False
+        }
+    except Exception as e:
+        logging.error(e)
+        return {
+            'statusCode': 400,
+            'body': 'unexpected error',
+            'isBase64Encoded': False
+        }

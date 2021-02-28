@@ -16,8 +16,8 @@ TEST_PARAMS = [
     {
         'description': 'existing task id and requested by not task owner',
         'method': 'GET',
-        'path': '/task/{task_id}',  # 024 ~ はother_user_id所属のタスク
-        'task_id': 'ABCDEFGHIJKLMNOPQRSTUVW024',
+        'path': '/task/{task_id}',
+        'task_id': 'ABCDEFGHIJKLMNOPQRSTUVW004',
         'username': 'existing_user_id'
     },
     {
@@ -81,7 +81,7 @@ def event(request_params):
                     "token_use": "id",
                     "auth_time": str(int(datetime.now().timestamp())),
                     "iss": "https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-*",
-                    "cognito:username": "セカンドテスト",
+                    "cognito:username": request_params['username'],
                     "exp": "Sun Feb 28 01:38:19 UTC 2021",
                     "iat": "Sun Feb 28 00:38:20 UTC 2021",
                     "email": "test@gmail.com"
@@ -115,5 +115,27 @@ def test_existing_task_and_requested_by_task_owner(event, context, request_param
             "created_at": 1614342166.0,
             "updated_at": 1614342166.0
         }),
+        'isBase64Encoded': False
+    }
+
+
+def test_existing_task_id_and_requested_by_not_task_owner(event, context, request_params):
+    if request_params['description'] != 'existing task id and requested by not task owner':
+        pytest.skip('not target case')
+    response = lambda_handler(event, context)
+    assert response == {
+        'statusCode': 403,
+        'body': 'not task owner',
+        'isBase64Encoded': False
+    }
+
+
+def test_not_existing_task_id(event, context, request_params):
+    if request_params['description'] != 'not existing task id':
+        pytest.skip('not target case')
+    response = lambda_handler(event, context)
+    assert response == {
+        'statusCode': 404,
+        'body': 'task is not found',
         'isBase64Encoded': False
     }
