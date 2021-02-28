@@ -6,6 +6,7 @@ import os
 
 
 def lambda_handler(event, context):
+    logging.info(event)
     user_id = ''
     if 'requestContext' in event and 'authorizer' in event['requestContext'] and 'claims' in event['requestContext']['authorizer'] and 'cognito:username' in event['requestContext']['authorizer']['claims']:
         user_id = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -19,7 +20,7 @@ def lambda_handler(event, context):
     payload = {}
     try:
         if 'body' in event:
-            payload = event['body']
+            payload = json.loads(event['body'])
             with open(os.path.dirname(__file__) + '/create.json') as f:
                 schema = json.load(f)
                 validate(payload, schema)

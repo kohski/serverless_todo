@@ -35,6 +35,7 @@ class Task:
         content: str = None,
         created_at: int = None,
         updated_at: int = None,
+        for_search: str = None,
         needs_validation: bool = True
     ):
         self.id = id

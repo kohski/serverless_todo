@@ -195,7 +195,7 @@ class TodoStack(core.Stack):
                                                                              command=[
                                                                                  'bash', '-c', 'pip install -r requirements.txt -t /asset-output && cp -a . /asset-output'],
                                                                          )),
-                                            handler="craete.lambda_handler",
+                                            handler="create.lambda_handler",
                                             runtime=lambda_.Runtime.PYTHON_3_8,
                                             environment=env,
                                             tracing=lambda_.Tracing.ACTIVE,

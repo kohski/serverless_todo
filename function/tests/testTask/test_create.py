@@ -3,7 +3,7 @@ from datetime import datetime
 from create import lambda_handler
 import boto3
 import os
-
+import json
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
@@ -93,7 +93,7 @@ def valid_event(valid_task):
             "requestTimeEpoch": int(datetime.now().timestamp()),
             "identity": {}
         },
-        "body": valid_task['payload'],
+        "body": json.dumps(valid_task['payload']),
         "isBase64Encoded": False
     }
 
@@ -192,7 +192,7 @@ def invalid_event(invalid_task):
             "requestTimeEpoch": int(datetime.now().timestamp()),
             "identity": {}
         },
-        "body": invalid_task['payload'],
+        "body": json.dumps(invalid_task['payload']),
         "isBase64Encoded": False
     }
 
