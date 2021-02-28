@@ -14,9 +14,16 @@
   ],
   "properties": {
     "id": {
-      "type": "string",
-      "description": "ulid",
-      "pattern": "^[0-9A-Z]{26}$"
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "ulid",
+          "pattern": "^[0-9A-Z]{26}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "meta": {
       "type": "string"
@@ -55,10 +62,24 @@
       ]
     },
     "created_at": {
-      "type": "number"
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "updated_at": {
-      "type": "number"
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   }
 }

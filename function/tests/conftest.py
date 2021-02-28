@@ -150,6 +150,7 @@ def create_init_ddb_data(ddb_setup):
             "meta": "latest",
             "priority": item['priority'],
             "is_done": item['is_done'],
-            "content": item['content']
+            "content": item['content'],
+            "for_search": str(item['title']) + str(item['content'])
         }
         table.put_item(Item=item)
