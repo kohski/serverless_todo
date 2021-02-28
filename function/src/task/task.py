@@ -16,6 +16,10 @@ class TaskNotFoundError(Exception):
     pass
 
 
+class NotTaskOwnerError(Exception):
+    pass
+
+
 class Task:
 
     def __init__(
@@ -70,9 +74,12 @@ class Task:
                 }
             )
             if 'Item' in item:
-                item['Item']['id'] = task_id
-                task = cls(**item['Item'])
-                return task
+                if item['Item'].get('owner') == user_id:
+                    item['Item']['id'] = task_id
+                    task = cls(**item['Item'])
+                    return task
+                else:
+                    raise NotTaskOwnerError
             else:
                 raise TaskNotFoundError
         except TaskNotFoundError as e:

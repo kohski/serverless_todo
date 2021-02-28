@@ -61,42 +61,39 @@ def context():
 @pytest.fixture()
 def event(request_params):
     return {
-        "version": "2.0",
-        "routeKey": "GET /test",
-        "rawPath": "/test",
-        "rawQueryString": "",
+        "resource": "/task/{task_id}",
+        "path": "/task/{}".format(request_params['task_id']),
+        "httpMethod": "GET",
         "headers": {},
+        "multiValueHeaders": {},
+        "queryStringParameters": None,
+        "multiValueQueryStringParameters": None,
         "pathParameters": {
             "task_id": request_params['task_id']
         },
+        "stageVariables": None,
         "requestContext": {
             "authorizer": {
-                "jwt": {
-                    "claims": {
-                        "auth_time": str(int(datetime.now().timestamp())),
-                        "cognito:username": request_params['username'],
-                        "email": "test@gmail.com",
-                        "exp": str(int(datetime.now().timestamp())),
-                        "iat": str(int(datetime.now().timestamp())),
-                        "iss": "https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_COGNITOID",
-                        "token_use": "id"
-                    },
-                    "scopes": None
+                "claims": {
+                    "sub": "68f2ed3a-3726-439d-81cb-171dab716733",
+                    "aud": "19gqr90c608tn8gp7j9nvop7h7",
+                    "event_id": "55536ceb-c042-4c18-8a25-8bd4e4c2b28d",
+                    "token_use": "id",
+                    "auth_time": str(int(datetime.now().timestamp())),
+                    "iss": "https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-*",
+                    "cognito:username": "セカンドテスト",
+                    "exp": "Sun Feb 28 01:38:19 UTC 2021",
+                    "iat": "Sun Feb 28 00:38:20 UTC 2021",
+                    "email": "test@gmail.com"
                 }
             },
-            "http": {
-                "method": request_params['method'],
-                "path": request_params['path'],
-                "protocol": "HTTP/1.1",
-                "sourceIp": "1.33.18.206",
-                "userAgent": "PostmanRuntime/7.26.8"
-            },
-            "requestId": "aj8PTi-_NjMEPFQ=",
-            "routeKey": "{method} {path}".format(method=request_params['method'], path=request_params['path']),
-            "stage": "$default",
-            "time": "11/Feb/2021:03:40:30 +0000",
-            "timeEpoch": int(datetime.now().timestamp())
+            "resourcePath": "/task/{task_id}",
+            "httpMethod": "GET",
+            "path": "/prod/task/123456",
+            "requestTimeEpoch": int(datetime.now().timestamp()),
+            "identity": {}
         },
+        "body": None,
         "isBase64Encoded": False
     }
 

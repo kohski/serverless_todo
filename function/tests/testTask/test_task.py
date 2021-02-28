@@ -1,6 +1,6 @@
 import pytest
 from copy import deepcopy
-from task import Task, TaskNotFoundError
+from task import Task, TaskNotFoundError, NotTaskOwnerError
 from jsonschema import ValidationError
 from decimal import Decimal
 
@@ -160,6 +160,15 @@ class TestGet:
             "content": "内容A",
             "for_search": "件名A内容A",
         }
+
+    def test_raise_exsiting_and_not_owned_task(self, create_init_ddb_data):
+        user_id = "existing_user_id"
+        task_id = "ABCDEFGHIJKLMNOPQRSTUVW004"
+        with pytest.raises(NotTaskOwnerError):
+            Task.get(
+                user_id,
+                task_id
+            )
 
     def test_raise_not_existing_id(self, create_init_ddb_data):
         user_id = "dummy_user_id"

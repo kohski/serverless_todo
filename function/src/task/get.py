@@ -12,17 +12,24 @@ class TaskNotFoundError(Exception):
 
 
 def lambda_handler(event, context):
+    logging.info(event)
     user_id = ''
-    if 'requestContext' in event and 'authorizer' in event['requestContext'] and 'jwt' in event['requestContext']['authorizer'] and 'claims' in event['requestContext']['authorizer']['jwt'] and 'cognito:username' in event['requestContext']['authorizer']['jwt']['claims']:
-        user_id = event['requestContext']['authorizer']['jwt']['claims']['cognito:username']
+    if 'requestContext' in event and 'authorizer' in event['requestContext'] and 'claims' in event['requestContext']['authorizer'] and 'cognito:username' in event['requestContext']['authorizer']['claims']:
+        user_id = event['requestContext']['authorizer']['claims']['cognito:username']
     else:
-        raise UserNotFoundError
+        return {
+            'statusCode': 401,
+            'isBase64Encoded': False
+        }
 
     task_id = ''
     if 'pathParameters' in event and 'task_id' in event['pathParameters']:
         task_id = event['pathParameters']['task_id']
     else:
-        raise TaskNotFoundError
+        return {
+            'statusCode': 400,
+            'isBase64Encoded': False
+        }
 
     raw_task = Task.get(user_id, task_id)
     task = raw_task.to_returnable_object()
