@@ -64,31 +64,44 @@ class Task:
             logging.error(e)
             raise e
 
-    def save(self):
+    def save(self, user_id: str = None):
         if self.id is None:
             self.id = str(ulid.new())
             self.created_at = int(datetime.now().timestamp())
             self.updated_at = int(datetime.now().timestamp())
             item = self.to_savable_object()
             item['id'] = 'Task:{}'.format(self.id)
+            try:
+                table.put_item(
+                    Item=item,
+                    ConditionExpression='attribute_not_exists(id)'
+                )
+                return self.to_returnable_object()
+            except ClientError as e:
+                logging.error(e)
+                raise e
+            except Exception as e:
+                logging.error(e)
+                raise e
+
         else:
-            pass
-        try:
-            table.put_item(
-                Item=item,
-                ConditionExpression='attribute_not_exists(id)'
-            )
-            return self.to_returnable_object()
-        except ClientError as e:
-            import pdb
-            pdb.set_trace()
-            logging.error(e)
-            raise e
-        except Exception as e:
-            import pdb
-            pdb.set_trace()
-            logging.error(e)
-            raise e
+            if user_id is None or user_id != self.owner:
+                raise NotTaskOwnerError
+            self.updated_at = int(datetime.now().timestamp())
+            item = self.to_savable_object()
+            item['id'] = 'Task:{}'.format(self.id)
+            try:
+                table.put_item(
+                    Item=item,
+                    ConditionExpression='attribute_exists(id)'
+                )
+                return self.to_returnable_object()
+            except ClientError as e:
+                logging.error(e)
+                raise e
+            except Exception as e:
+                logging.error(e)
+                raise e
 
     @classmethod
     def get(cls, user_id, task_id):
@@ -118,9 +131,9 @@ class Task:
             raise e
 
     def to_returnable_object(self):
-        if hasattr(self, 'created_at'):
+        if hasattr(self, 'created_at') and self.created_at is not None:
             self.created_at = float(self.created_at)
-        if hasattr(self, 'updated_at'):
+        if hasattr(self, 'updated_at') and self.created_at is not None:
             self.updated_at = float(self.updated_at)
         if hasattr(self, 'for_search'):
             del self.for_search

@@ -25,6 +25,7 @@ def lambda_handler(event, context):
                 schema = json.load(f)
                 validate(payload, schema)
             payload['id'] = None
+            payload['meta'] = 'latest'
             payload['owner'] = user_id
         task = Task(**payload)
         response = task.save()

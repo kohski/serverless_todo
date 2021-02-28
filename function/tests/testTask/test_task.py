@@ -188,8 +188,8 @@ class TestGet:
 
 
 class TestSave:
-    def test_save_typical_task(self, create_init_ddb_data, ulid_mock):
-        task = Task(**{
+    def test_save_new_typical_task(self, create_init_ddb_data, ulid_mock):
+        temp_task = Task(**{
             "id": None,
             "title": "件名A",
             "meta": "latest",
@@ -198,7 +198,7 @@ class TestSave:
             "is_done": True,
             "content": "内容A"
         })
-        task.save()
+        temp_task.save()
         item = table.get_item(
             Key={
                 'id': 'Task:ABCDEFGHIJKLMNOPQRSTUVW999',
@@ -217,3 +217,46 @@ class TestSave:
             "updated_at": Decimal("1614870000"),
             "for_search": "件名A内容A"
         }
+
+    def test_save_existed_typical_task(self, create_init_ddb_data, ulid_mock):
+        temp_task = Task(**{
+            'id': 'ABCDEFGHIJKLMNOPQRSTUVW000',
+            'title': '更新タイトル',
+            'priority': 'low',
+            'owner': 'existing_user_id',
+            'is_done': False,
+            'content': '更新内容',
+            'created_at': 1614870000
+        })
+        response = temp_task.save('existing_user_id')
+        item = table.get_item(
+            Key={
+                'id': 'Task:ABCDEFGHIJKLMNOPQRSTUVW000',
+                'meta': 'latest'
+            }
+        )
+        assert item['Item'] == {
+            "id": "Task:ABCDEFGHIJKLMNOPQRSTUVW000",
+            "meta": "latest",
+            "title": "更新タイトル",
+            "owner": "existing_user_id",
+            "content": "更新内容",
+            "is_done": False,
+            "priority": "low",
+            "created_at": Decimal("1614870000"),
+            "updated_at": Decimal("1614870000"),
+            "for_search": "更新タイトル更新内容"
+        }
+
+    def test_raise_not_owner_task(self, create_init_ddb_data, ulid_mock):
+        temp_task = Task(**{
+            'id': 'ABCDEFGHIJKLMNOPQRSTUVW000',
+            'title': '更新タイトル',
+            'priority': 'low',
+            'owner': 'existing_user_id',
+            'is_done': False,
+            'content': '更新内容',
+            'created_at': 1614870000
+        })
+        with pytest.raises(NotTaskOwnerError):
+            temp_task.save('not_owner_id')

@@ -52,7 +52,6 @@ def valid_task(valid_priority_params, valid_is_done_params, valid_content_params
         'payload': {
             "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
             "title": "タイトル",
-            "owner": "latest",
             "priority": valid_priority_params,
             "is_done": valid_is_done_params,
             "content": valid_content_params
