@@ -148,6 +148,24 @@ class Task:
             self.content = None
         return vars(self)
 
+    def delete(self, user_id: str = None):
+        if self.owner != user_id:
+            raise NotTaskOwnerError
+
+        response = table.delete_item(
+            Key={
+                'id': "Task:{}".format(self.id),
+                'meta': 'latest'
+            },
+            ReturnValues='ALL_OLD'
+        )
+        if 'id' not in response['Attributes']:
+            raise TaskNotFoundError
+        response['Attributes']['id'] = response['Attributes']['id'].split(
+            "Task:")[-1]
+        deleted_task = Task(**response['Attributes'])
+        return deleted_task.to_returnable_object()
+
     @classmethod
     def search():
         pass

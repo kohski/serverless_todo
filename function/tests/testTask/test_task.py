@@ -228,7 +228,7 @@ class TestSave:
             'content': '更新内容',
             'created_at': 1614870000
         })
-        response = temp_task.save('existing_user_id')
+        temp_task.save('existing_user_id')
         item = table.get_item(
             Key={
                 'id': 'Task:ABCDEFGHIJKLMNOPQRSTUVW000',
@@ -260,3 +260,30 @@ class TestSave:
         })
         with pytest.raises(NotTaskOwnerError):
             temp_task.save('not_owner_id')
+
+
+class TestDelete:
+
+    def test_delete_existing_task(self, create_init_ddb_data):
+        user_id = 'existing_user_id'
+        task_id = 'ABCDEFGHIJKLMNOPQRSTUVW000'
+        temp_task = Task.get(user_id, task_id)
+        response = temp_task.delete(user_id)
+        assert response == {
+            'id': 'ABCDEFGHIJKLMNOPQRSTUVW000',
+            'title': '件名A',
+            'owner': 'existing_user_id',
+            'created_at': 1614342166.0,
+            'updated_at': 1614342166.0,
+            'meta': 'latest',
+            'priority': 'high',
+            'is_done': True,
+            'content': '内容A'
+        }
+
+    def test_raise_delete_not_owner_task(self, create_init_ddb_data):
+        user_id = 'not_owner_user_id'
+        task_id = 'ABCDEFGHIJKLMNOPQRSTUVW000'
+        with pytest.raises(NotTaskOwnerError):
+            temp_task = Task.get(user_id, task_id)
+            temp_task.delete(user_id)
