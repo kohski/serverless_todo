@@ -1,7 +1,6 @@
 import pytest
 from datetime import datetime
 from get import lambda_handler
-import uuid
 import json
 
 

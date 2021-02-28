@@ -77,10 +77,15 @@ class Task:
                 Item=item,
                 ConditionExpression='attribute_not_exists(id)'
             )
+            return self.to_returnable_object()
         except ClientError as e:
+            import pdb
+            pdb.set_trace()
             logging.error(e)
             raise e
         except Exception as e:
+            import pdb
+            pdb.set_trace()
             logging.error(e)
             raise e
 
@@ -125,6 +130,8 @@ class Task:
             self.created_at = Decimal(str(self.created_at))
         if hasattr(self, 'updated_at') and self.updated_at is not None:
             self.updated_at = Decimal(str(self.updated_at))
+        if hasattr(self, 'content') and self.content == '':
+            self.content = None
         return vars(self)
 
     @classmethod

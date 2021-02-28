@@ -25,19 +25,6 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 
-@pytest.fixture()
-def ulid_mock(mocker):
-    def prepare_response():
-        return 'ABCDEFGHIJKLMNOPQRSTUVW999'
-    ulid_mock = mocker.Mock()
-    ulid_mock.new.side_effect = prepare_response
-    mocker.patch.object(
-        task,
-        "ulid",
-        ulid_mock
-    )
-
-
 @pytest.fixture(params=PRIORITY_LIST)
 def priority_params(request):
     return request.param
@@ -81,7 +68,6 @@ def single_typical_task():
 class TestTaskConstructor:
 
     def test_constructor(self, typical_task):
-        print(typical_task)
         task = Task(**typical_task)
         assert hasattr(task, "id")
         assert hasattr(task, "title")

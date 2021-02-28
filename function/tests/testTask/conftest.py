@@ -8,6 +8,21 @@ sys.path.append(os.path.abspath(os.path.dirname(
     os.path.abspath(__file__)) + "/../../src/task/"))
 
 
+@pytest.fixture()
+def ulid_mock(mocker):
+    import task
+
+    def prepare_response():
+        return 'ABCDEFGHIJKLMNOPQRSTUVW999'
+    ulid_mock = mocker.Mock()
+    ulid_mock.new.side_effect = prepare_response
+    mocker.patch.object(
+        task,
+        "ulid",
+        ulid_mock
+    )
+
+
 @ pytest.fixture()
 def context():
     # id = str(uuid.uuid4())
