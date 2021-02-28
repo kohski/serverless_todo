@@ -50,6 +50,10 @@ def ddb_setup(start_ddb_moto_mock):
             {
                 "AttributeName": "meta",
                 "AttributeType": "S"
+            },
+            {
+                "AttributeName": "owner",
+                "AttributeType": "S"
             }
         ],
         BillingMode='PAY_PER_REQUEST',
@@ -63,6 +67,22 @@ def ddb_setup(start_ddb_moto_mock):
                     },
                     {
                         "AttributeName": "id",
+                        "KeyType": "RANGE"
+                    }
+                ],
+                "Projection": {
+                    "ProjectionType": "ALL"
+                }
+            },
+            {
+                "IndexName": "owner-meta-index",
+                "KeySchema": [
+                    {
+                        "AttributeName": "owner",
+                        "KeyType": "HASH"
+                    },
+                    {
+                        "AttributeName": "meta",
                         "KeyType": "RANGE"
                     }
                 ],
