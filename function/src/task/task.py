@@ -148,6 +148,16 @@ class Task:
             self.content = None
         return vars(self)
 
+    def delete(self):
+        response = table.delete_item(
+            Key={
+                'id': "Task:{}".format(self.id),
+                'meta': 'latest'
+            },
+            ReturnValues='ALL_OLD'
+        )
+        return response['Attributes']
+
     @classmethod
     def search():
         pass

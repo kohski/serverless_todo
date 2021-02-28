@@ -260,3 +260,22 @@ class TestSave:
         })
         with pytest.raises(NotTaskOwnerError):
             temp_task.save('not_owner_id')
+
+
+class TestDelete:
+
+    def test_delete_existing_task(self, create_init_ddb_data):
+        temp_task = Task.get('existing_user_id', 'ABCDEFGHIJKLMNOPQRSTUVW000')
+        response = temp_task.delete()
+        assert response == {
+            'id': 'Task:ABCDEFGHIJKLMNOPQRSTUVW000',
+            'title': '件名A',
+            'owner': 'existing_user_id',
+            'created_at': Decimal('1614342166'),
+            'updated_at': Decimal('1614342166'),
+            'meta': 'latest',
+            'priority': 'high',
+            'is_done': True,
+            'content': '内容A',
+            'for_search': '件名A内容A'
+        }
