@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task create",
+  "description": "Task create validate",
+  "type": "object",
+  "required": [
+    "title",
+    "is_done",
+    "priority"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "content": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 2000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "is_done": {
+      "type": "boolean"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    }
+  }
+}
