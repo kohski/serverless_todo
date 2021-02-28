@@ -6,6 +6,7 @@
   "required": [
     "id",
     "meta",
+    "owner",
     "title",
     "is_done",
     "priority",
@@ -21,6 +22,11 @@
       "type": "string"
     },
     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "owner": {
       "type": "string",
       "minLength": 1,
       "maxLength": 100

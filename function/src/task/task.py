@@ -22,6 +22,7 @@ class Task:
         self,
         id: str,
         title: str,
+        owner: str,
         created_at: str,
         updated_at: str,
         meta: str,
@@ -33,6 +34,7 @@ class Task:
         self.id = id
         self.meta = meta
         self.title = title
+        self.owner = owner
         self.content = content
         self.is_done = is_done
         self.priority = priority
@@ -64,7 +66,7 @@ class Task:
             item = table.get_item(
                 Key={
                     'id': "Task:{}".format(task_id),
-                    'meta': user_id
+                    'meta': "latest"
                 }
             )
             if 'Item' in item:

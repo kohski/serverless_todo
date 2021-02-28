@@ -124,9 +124,10 @@ def create_init_ddb_data(ddb_setup):
         item = {
             "id": "Task:ABCDEFGHIJKLMNOPQRSTUVW{}".format(str(id).zfill(3)),
             "title": item['title'],
+            "owner": item['user_id'],
             "created_at": 1614342166,
             "updated_at": 1614342166,
-            "meta": item['user_id'],
+            "meta": "latest",
             "priority": item['priority'],
             "is_done": item['is_done'],
             "content": item['content']
