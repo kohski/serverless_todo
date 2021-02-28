@@ -3,7 +3,6 @@ from datetime import datetime
 from create import lambda_handler
 import boto3
 import os
-import json
 
 
 dynamodb = boto3.resource('dynamodb')
