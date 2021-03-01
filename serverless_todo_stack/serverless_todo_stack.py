@@ -142,7 +142,8 @@ class TodoStack(core.Stack):
         #      lambda common configure
         # -----------------------------------
         env = {
-            "TABLE_NAME": dynamodbTable.table_name
+            "TABLE_NAME": dynamodbTable.table_name,
+            "USER_POOL_ID": userpool.user_pool_id
         }
 
         # -----------------------------------

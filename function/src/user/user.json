@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Task",
+  "description": "Task validate",
+  "type": "object",
+  "required": [
+    "id",
+    "email",
+    "family_name",
+    "given_name"
+  ],
+  "properties": {
+    "id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "uuid",
+          "pattern": "^[0-9a-z-]{36}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "pattern": "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$"
+    },
+    "family_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "given_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    }
+  }
+}
