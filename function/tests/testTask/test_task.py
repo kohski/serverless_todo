@@ -307,12 +307,17 @@ class TestSearch:
             for x in tasks
         ])
 
-    @pytest.mark.parametrize("is_done", [True, False])
+    @pytest.mark.parametrize("is_done", ['true', 'false'])
     def test_is_done_search(self, is_done, create_init_ddb_data):
+        def __convert_is_done(is_done: str):
+            if is_done == 'true':
+                return True
+            elif is_done == 'false':
+                return False
         user_id = 'existing_user_id'
         tasks = Task.search(user_id, is_done=is_done)
         assert all([
-            x['is_done'] is is_done and x['owner'] == user_id for x in tasks
+            x['is_done'] is __convert_is_done(is_done) and x['owner'] == user_id for x in tasks
         ])
 
     @pytest.mark.parametrize("priority", ['high', 'medium', 'low'])
@@ -326,7 +331,7 @@ class TestSearch:
     @pytest.mark.parametrize("word,is_done,priority", [
         (w, d, p)
         for w in ['A', '内容', '']
-        for d in [True, False]
+        for d in ['true', 'false']
         for p in ['high', 'medium', 'low']
     ])
     def test_multi_search(self, word, is_done, priority, create_init_ddb_data):

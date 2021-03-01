@@ -6,7 +6,7 @@ from search import lambda_handler
 @pytest.mark.parametrize("word,is_done,priority", [
     (w, d, p)
     for w in ['A', '内容', '']
-    for d in [True, False]
+    for d in ['true', 'false']
     for p in ['high', 'medium', 'low']
 ])
 def test_valid_search(word, is_done, priority, context):

@@ -168,6 +168,13 @@ class Task:
         return deleted_task.to_returnable_object()
 
     @classmethod
+    def __convert_is_done(self, is_done: str):
+        if is_done == 'false':
+            return False
+        elif is_done == 'true':
+            return True
+
+    @classmethod
     def search(
         cls,
         user_id: str,
@@ -190,9 +197,10 @@ class Task:
                 filter_info = filter_info & Attr(
                     'for_search').contains(freeword)
         if is_done != 'both':
-            if type(is_done) == bool:
+            converted_is_done = cls.__convert_is_done(is_done)
+            if type(converted_is_done) == bool:
                 if filter_info is None:
-                    filter_info = Attr('is_done').eq(is_done)
+                    filter_info = Attr('is_done').eq(converted_is_done)
                 else:
                     filter_info = filter_info & Attr('is_done').eq(is_done)
         if priority is not None:
