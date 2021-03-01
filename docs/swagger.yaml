@@ -108,6 +108,27 @@ paths:
         idを指定して、単一のタスクを取得
       produces:
         - application/json
+      parameters:
+        - in: query
+          name: freeword
+          description: "検索語句"
+          type: string
+        - in: query
+          name: is_done
+          description: 完了かどうか
+          type: string
+          enum:
+            - "true"
+            - "false"
+            - "both"
+        - in: query
+          name: priority
+          description: 重要度
+          type: string
+          enum:
+            - high
+            - medium
+            - low
       responses:
         200:
           description: 該当するタスクがある
@@ -125,6 +146,7 @@ definitions:
     required:
       - id
       - title
+      - owner
       - created_at
       - is_done
       - priority
@@ -136,6 +158,11 @@ definitions:
       title:
         type: string
         example: 宿題をする
+        minLength: 1
+        maxLength: 100
+      owner:
+        type: string
+        example: test_user
         minLength: 1
         maxLength: 100
       content:
