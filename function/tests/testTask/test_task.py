@@ -302,7 +302,9 @@ class TestSearch:
         user_id = 'existing_user_id'
         tasks = Task.search(user_id, freeword=word)
         assert all([
-            word in x['for_search'] and x['owner'] == user_id for x in tasks
+            (word in x['title'] or word in x['content'])
+            and x['owner'] == user_id
+            for x in tasks
         ])
 
     @pytest.mark.parametrize("is_done", [True, False])
@@ -335,10 +337,8 @@ class TestSearch:
             priority=priority,
             is_done=is_done
         )
-        import pdb
-        pdb.set_trace()
         assert all([
-            word in x['for_search']
+            (word in x['title'] or word in x['content'])
             and x['is_done'] is is_done
             and x['priority'] == priority
             and x['owner'] == user_id

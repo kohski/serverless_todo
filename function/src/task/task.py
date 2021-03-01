@@ -212,4 +212,8 @@ class Task:
             accumed_response += response['Items']
 
         tasks = sorted(accumed_response, key=lambda x: x['id'])
-        return tasks
+        returnable_tasks = []
+        for each_task in tasks:
+            each_task['id'] = each_task['id'].split('Task:')[-1]
+            returnable_tasks.append(Task(**each_task).to_returnable_object())
+        return returnable_tasks
