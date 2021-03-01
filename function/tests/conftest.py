@@ -7,7 +7,8 @@ import os
 DEFAULT_TIME = '2021-03-04T15:00:00'
 
 env = {
-    "TABLE_NAME": "DummyTable"
+    "TABLE_NAME": "DummyTable",
+    "USER_POOL_ID": "UserPoolId"
 }
 
 for k in env:
@@ -21,14 +22,16 @@ def set_time(freezer):
 
 
 @pytest.fixture(autouse=True)
-def start_ddb_moto_mock():
+def start_moto_mock():
     moto.mock_dynamodb2().start()
+    moto.mock_cognitoidp().start()
     yield
-    moto.mock_s3().stop()
+    moto.mock_cognitoidp().stop()
+    moto.mock_dynamodb2().stop()
 
 
 @pytest.fixture(autouse=True)
-def ddb_setup(start_ddb_moto_mock):
+def ddb_setup(start_moto_mock):
     dynamodb = boto3.resource('dynamodb')
     dynamodb.create_table(
         TableName=os.environ['TABLE_NAME'],
@@ -94,6 +97,16 @@ def ddb_setup(start_ddb_moto_mock):
     )
 
 
+users = [
+    {
+        "id": "existing_user_id",
+        "given_name": "テスト",
+        "family_name": "ユーザー",
+        "email": "test@test.com"
+    }
+]
+
+
 @pytest.fixture(autouse=True)
 def create_init_ddb_data(ddb_setup):
     dynamodb = boto3.resource('dynamodb')
@@ -154,3 +167,75 @@ def create_init_ddb_data(ddb_setup):
             "for_search": str(item['title']) + str(item['content'])
         }
         table.put_item(Item=item)
+
+
+@pytest.fixture(autouse=True)
+def idp_setup(start_moto_mock):
+    idp = boto3.client('cognito-idp')
+    userpool = idp.create_user_pool(
+        PoolName='ServerlessTodoUserPool',
+        Policies={
+            'PasswordPolicy': {
+                'MinimumLength': 6,
+                'RequireUppercase': True,
+                'RequireLowercase': True,
+                'RequireNumbers': True,
+                'RequireSymbols': True,
+                'TemporaryPasswordValidityDays': 7
+            }
+        },
+        AutoVerifiedAttributes=[
+            'email'
+        ],
+        AliasAttributes=[
+            'email'
+        ],
+        AdminCreateUserConfig={
+            'AllowAdminCreateUserOnly': True,
+        },
+        Schema=[
+            {
+                'Name': 'email',
+                'Required': True
+            },
+            {
+                'Name': 'given_name',
+                'Required': True
+            },
+            {
+                'Name': 'family_name',
+                'Required': True
+            }
+        ]
+    )
+    os.environ['USER_POOL_ID'] = userpool['UserPool']['Id']
+
+
+@pytest.fixture()
+def idp_create_init_data(idp_setup):
+    # 初期データの作成
+    idp = boto3.client('cognito-idp')
+
+    for user in users:
+        param = {
+            'UserPoolId': os.environ['USER_POOL_ID'],
+            'Username': user["id"],
+            'UserAttributes': [
+                {
+                    'Name': 'given_name',
+                    'Value': user['given_name']
+                },
+                {
+                    'Name': 'family_name',
+                    'Value': user['family_name']
+                },
+                {
+                    'Name': 'email',
+                    'Value': user['email']
+                }
+            ],
+            'DesiredDeliveryMediums': [
+                'EMAIL',
+            ],
+        }
+        idp.admin_create_user(**param)
