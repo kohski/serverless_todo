@@ -1,6 +1,7 @@
 import json
 from jsonschema import validate, ValidationError
 import boto3
+from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
 import os
 import logging
@@ -167,5 +168,48 @@ class Task:
         return deleted_task.to_returnable_object()
 
     @classmethod
-    def search():
-        pass
+    def search(
+        cls,
+        user_id: str,
+        freeword: str = None,
+        is_done: str = 'both',
+        priority: str = None
+    ):
+        accumed_response = []
+
+        params = {
+            'IndexName': 'owner-meta-index',
+            'KeyConditionExpression': Key('owner').eq(str(user_id)) & Key('meta').eq('latest')
+        }
+
+        filter_info = None
+        if freeword is not None:
+            if filter_info is None:
+                filter_info = Attr('for_search').contains(freeword)
+            else:
+                filter_info = filter_info & Attr(
+                    'for_search').contains(freeword)
+        if is_done != 'both':
+            if type(is_done) == bool:
+                if filter_info is None:
+                    filter_info = Attr('is_done').eq(is_done)
+                else:
+                    filter_info = filter_info & Attr('is_done').eq(is_done)
+        if priority is not None:
+            if filter_info is None:
+                filter_info = Attr('priority').eq(priority)
+            else:
+                filter_info = filter_info & Attr('priority').eq(priority)
+
+        if filter_info is not None:
+            params['FilterExpression'] = filter_info
+        response = table.query(**params)
+
+        accumed_response += response['Items']
+        while 'LastEvaluatedKey' in response:
+            params["ExclusiveStartKey"] = response['LastEvaluatedKey']
+            response = table.query(**params)
+            accumed_response += response['Items']
+
+        tasks = sorted(accumed_response, key=lambda x: x['id'])
+        return tasks

@@ -1,10 +1,8 @@
 import pytest
 from copy import deepcopy
 from task import Task, TaskNotFoundError, NotTaskOwnerError
-import task
 from jsonschema import ValidationError
 from decimal import Decimal
-from datetime import datetime
 import os
 import boto3
 
@@ -287,3 +285,62 @@ class TestDelete:
         with pytest.raises(NotTaskOwnerError):
             temp_task = Task.get(user_id, task_id)
             temp_task.delete(user_id)
+
+
+class TestSearch:
+
+    def test_default_search(self, create_init_ddb_data):
+        """
+        全48件のうち、ownerが'existing_user_id'である24件
+        """
+        user_id = 'existing_user_id'
+        tasks = Task.search(user_id)
+        assert all([x['owner'] == user_id for x in tasks])
+
+    @pytest.mark.parametrize("word", ['A', '内容', ''])
+    def test_freeeword_search(self, word, create_init_ddb_data):
+        user_id = 'existing_user_id'
+        tasks = Task.search(user_id, freeword=word)
+        assert all([
+            word in x['for_search'] and x['owner'] == user_id for x in tasks
+        ])
+
+    @pytest.mark.parametrize("is_done", [True, False])
+    def test_is_done_search(self, is_done, create_init_ddb_data):
+        user_id = 'existing_user_id'
+        tasks = Task.search(user_id, is_done=is_done)
+        assert all([
+            x['is_done'] is is_done and x['owner'] == user_id for x in tasks
+        ])
+
+    @pytest.mark.parametrize("priority", ['high', 'medium', 'low'])
+    def test_priority_search(self, priority, create_init_ddb_data):
+        user_id = 'existing_user_id'
+        tasks = Task.search(user_id, priority=priority)
+        assert all([
+            x['priority'] == priority and x['owner'] == user_id for x in tasks
+        ])
+
+    @pytest.mark.parametrize("word,is_done,priority", [
+        (w, d, p)
+        for w in ['A', '内容', '']
+        for d in [True, False]
+        for p in ['high', 'medium', 'low']
+    ])
+    def test_multi_search(self, word, is_done, priority, create_init_ddb_data):
+        user_id = 'existing_user_id'
+        tasks = Task.search(
+            user_id,
+            freeword=word,
+            priority=priority,
+            is_done=is_done
+        )
+        import pdb
+        pdb.set_trace()
+        assert all([
+            word in x['for_search']
+            and x['is_done'] is is_done
+            and x['priority'] == priority
+            and x['owner'] == user_id
+            for x in tasks
+        ])

@@ -111,12 +111,16 @@ paths:
       parameters:
         - in: query
           name: freeword
-          description: '検索語句をカンマ区切りで連結して指定(例: "宿題,起床")'
+          description: "検索語句"
           type: string
         - in: query
           name: is_done
           description: 完了かどうか
-          type: boolean
+          type: string
+          enum:
+            - "true"
+            - "false"
+            - "both"
         - in: query
           name: priority
           description: 重要度
