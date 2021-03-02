@@ -1,53 +1,32 @@
 import logging
-import json
 from task import Task, TaskNotFoundError, NotTaskOwnerError
+from util import fetch_user_id_from_event, convert_return_object, UserNotFoundError
 
 
-class UserNotFoundError(Exception):
-    pass
+def fetch_search_info(event):
+    search_info = {}
+    if 'queryStringParameters' in event and event['queryStringParameters'] is not None:
+        search_info = event['queryStringParameters']
+    return search_info
 
 
 def lambda_handler(event, context):
     logging.info(event)
-    user_id = ''
-    if 'requestContext' in event and 'authorizer' in event['requestContext'] and 'claims' in event['requestContext']['authorizer'] and 'cognito:username' in event['requestContext']['authorizer']['claims']:
-        user_id = event['requestContext']['authorizer']['claims']['cognito:username']
-    else:
-        return {
-            'statusCode': 401,
-            'body': 'invalid token',
-            'isBase64Encoded': False
-        }
-
-    search_info = {}
-    if 'queryStringParameters' in event and event['queryStringParameters'] is not None:
-        search_info = event['queryStringParameters']
+    user_id = fetch_user_id_from_event(event)
+    search_info = fetch_search_info(event)
 
     try:
         tasks = Task.search(user_id, **search_info)
-        return {
-            'statusCode': 200,
-            'body': json.dumps(tasks),
-            'isBase64Encoded': False
-        }
+        return convert_return_object(200, tasks)
     except TaskNotFoundError as e:
         logging.error(e)
-        return {
-            'statusCode': 404,
-            'body': 'task is not found',
-            'isBase64Encoded': False
-        }
+        return convert_return_object(404, 'task is not found')
+    except UserNotFoundError as e:
+        logging.error(e)
+        return convert_return_object(400, 'user not found error')
     except NotTaskOwnerError as e:
         logging.error(e)
-        return {
-            'statusCode': 403,
-            'body': 'not task owner',
-            'isBase64Encoded': False
-        }
+        return convert_return_object(403, 'not task owner')
     except Exception as e:
         logging.error(e)
-        return {
-            'statusCode': 400,
-            'body': 'unexpected error',
-            'isBase64Encoded': False
-        }
+        return convert_return_object(400, 'unexpected error')
