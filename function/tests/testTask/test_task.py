@@ -150,7 +150,7 @@ class TestGet:
 
     def test_raise_exsiting_and_not_owned_task(self, create_init_ddb_data):
         user_id = "existing_user_id"
-        task_id = "ABCDEFGHIJKLMNOPQRSTUVW004"
+        task_id = "ABCDEFGHIJKLMNOPQRSTUVW024"
         with pytest.raises(NotTaskOwnerError):
             Task.get(
                 user_id,

@@ -16,7 +16,7 @@ TEST_PARAMS = [
         'description': 'existing task id and requested by not task owner',
         'method': 'DELETE',
         'path': '/task/{task_id}',
-        'task_id': 'ABCDEFGHIJKLMNOPQRSTUVW004',
+        'task_id': 'ABCDEFGHIJKLMNOPQRSTUVW024',
         'username': 'existing_user_id'
     },
     {
