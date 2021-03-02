@@ -6,35 +6,21 @@ from decimal import Decimal
 import os
 import boto3
 
-PRIORITY_LIST = [
-    "high",
-    "medium",
-    "low"
-]
-
-IS_DONE_LIST = [
-    True,
-    False
-]
-
 DUMMY_ULID = 'ABCDEFGHIJKLMNOPQRSTUVW999'
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 
-@pytest.fixture(params=PRIORITY_LIST)
-def priority_params(request):
-    return request.param
-
-
-@pytest.fixture(params=IS_DONE_LIST)
-def is_done_params(request):
-    return request.param
-
-
-@pytest.fixture
-def typical_task(priority_params, is_done_params):
+@pytest.fixture(params=[
+    {
+        "priority": priority,
+        "is_done": is_done
+    }
+    for priority in ["high", "medium", "low"]
+    for is_done in [True, False]
+])
+def typical_task(request):
     return {
         "id": "ABCDEFGHIJKLMNOPQRSTUVW000",
         "title": "タイトル",
@@ -42,8 +28,8 @@ def typical_task(priority_params, is_done_params):
         "created_at": 1614342166,
         "updated_at": 1614342166,
         "meta": "latest",
-        "priority": priority_params,
-        "is_done": is_done_params,
+        "priority": request.param.get('priority'),
+        "is_done": request.param.get('is_done'),
         "content": "内容"
     }
 
@@ -75,7 +61,6 @@ class TestTaskConstructor:
         assert hasattr(task, "priority")
         assert hasattr(task, "is_done")
         assert hasattr(task, "content")
-        assert hasattr(task, "for_search")
 
 
 class TestValidation:
@@ -83,8 +68,6 @@ class TestValidation:
     def test_valid_typical_task(self, typical_task):
         task = Task(**typical_task)
         copied_task = deepcopy(typical_task)
-        copied_task["for_search"] = copied_task["title"] + \
-            copied_task["content"]
         assert vars(task) == copied_task
 
     def test_raise_title_is_blunk(self, single_typical_task):
@@ -162,8 +145,7 @@ class TestGet:
             'owner': 'existing_user_id',
             "priority": "high",
             "is_done": True,
-            "content": "内容A",
-            "for_search": "件名A内容A",
+            "content": "内容A"
         }
 
     def test_raise_exsiting_and_not_owned_task(self, create_init_ddb_data):
@@ -212,8 +194,7 @@ class TestSave:
             "is_done": True,
             "priority": "high",
             "created_at": Decimal("1614870000"),
-            "updated_at": Decimal("1614870000"),
-            "for_search": "件名A内容A"
+            "updated_at": Decimal("1614870000")
         }
 
     def test_save_existed_typical_task(self, create_init_ddb_data, ulid_mock):
@@ -242,8 +223,7 @@ class TestSave:
             "is_done": False,
             "priority": "low",
             "created_at": Decimal("1614870000"),
-            "updated_at": Decimal("1614870000"),
-            "for_search": "更新タイトル更新内容"
+            "updated_at": Decimal("1614870000")
         }
 
     def test_raise_not_owner_task(self, create_init_ddb_data, ulid_mock):
