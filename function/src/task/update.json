@@ -27,7 +27,11 @@
       ]
     },
     "is_done": {
-      "type": "boolean"
+      "type": "string",
+      "enum": [
+        "true",
+        "false"
+      ]
     },
     "priority": {
       "type": "string",
