@@ -36,7 +36,6 @@ class Task:
         content: str = None,
         created_at: int = None,
         updated_at: int = None,
-        for_search: str = None,
         needs_validation: bool = True
     ):
         self.id = id
@@ -48,10 +47,6 @@ class Task:
         self.priority = priority
         self.created_at = created_at
         self.updated_at = updated_at
-        for_search = ''
-        for_search += title if title is not None else ''
-        for_search += content if content is not None else ''
-        self.for_search = for_search
 
         try:
             if needs_validation:
@@ -136,8 +131,6 @@ class Task:
             self.created_at = float(self.created_at)
         if hasattr(self, 'updated_at') and self.created_at is not None:
             self.updated_at = float(self.updated_at)
-        if hasattr(self, 'for_search'):
-            del self.for_search
         return vars(self)
 
     def to_savable_object(self):
@@ -192,10 +185,11 @@ class Task:
         filter_info = None
         if freeword is not None:
             if filter_info is None:
-                filter_info = Attr('for_search').contains(freeword)
+                filter_info = Attr('title').contains(
+                    freeword) & Attr('content').contains(freeword)
             else:
-                filter_info = filter_info & Attr(
-                    'for_search').contains(freeword)
+                filter_info = filter_info & Attr('title').contains(
+                    freeword) & Attr('content').contains(freeword)
         if is_done != 'both':
             converted_is_done = cls.__convert_is_done(is_done)
             if type(converted_is_done) == bool:
