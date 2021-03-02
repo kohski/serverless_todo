@@ -7,8 +7,6 @@ info:
 tags:
   - name: task
     description: タスクのエンティティ
-  - name: user
-    description: ユーザーのエンティティ
 
 paths:
   /task:

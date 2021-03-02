@@ -146,10 +146,10 @@ def create_init_ddb_data(ddb_setup):
             "title": t,
             "content": c
         }
-        for p in PRIORITY_LIST
-        for d in IS_DONE_LIST
         for u in USER_ID_LIST
         for t in TITLE_LIST
+        for p in PRIORITY_LIST
+        for d in IS_DONE_LIST
         for c in CONTENT_LIST
     ]
 

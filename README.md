@@ -1,7 +1,6 @@
 # serverless_todo
 todo application by serverless
 
----
 # 検証方法
 
 ## 検証済み環境
@@ -80,3 +79,17 @@ $ cdk deploy --profile {profile_name}
       --auth-parameters USERNAME={email},PASSWORD={password} \
       --profile {profile_name}
       ```
+6. APIリクエスト  
+  ログインのレスポンスのidTokenをAPI HeaderのAuthorizationヘッダーに格納して、APIリクエストする
+
+# ドキュメント関連
+
+### APIドキュメント
+/docs/swagger.yaml
+
+### データストア設計
+https://docs.google.com/spreadsheets/d/1-Y4x7S1cdg1fYqbsL68ZiJM_g_dyW8dhbIzOw4DS4lM/edit#gid=0
+
+### テストケース設計
+https://docs.google.com/spreadsheets/d/1-Y4x7S1cdg1fYqbsL68ZiJM_g_dyW8dhbIzOw4DS4lM/edit#gid=839085431
+https://docs.google.com/spreadsheets/d/1-Y4x7S1cdg1fYqbsL68ZiJM_g_dyW8dhbIzOw4DS4lM/edit#gid=2004027084
