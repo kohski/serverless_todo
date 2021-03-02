@@ -3,6 +3,7 @@ from jsonschema import validate, ValidationError
 import json
 import logging
 import os
+from util import fetch_user_id_from_event, convert_return_object, InvalidTaskIdError, fetch_task_id, UserNotFoundError
 
 
 def convert_savable(task, payload):
@@ -17,51 +18,41 @@ def convert_savable(task, payload):
         raise Exception
 
 
+def convert_payload(event):
+    payload = json.loads(event['body'])
+    with open(os.path.dirname(__file__) + '/update.json') as f:
+        schema = json.load(f)
+        validate(payload, schema)
+    if payload['is_done'] == 'true':
+        payload['is_done'] = True
+    elif payload['is_done'] == 'false':
+        payload['is_done'] = False
+    return payload
+
+
 def lambda_handler(event, context):
     logging.info(event)
-    user_id = ''
-    if 'requestContext' in event and 'authorizer' in event['requestContext'] and 'claims' in event['requestContext']['authorizer'] and 'cognito:username' in event['requestContext']['authorizer']['claims']:
-        user_id = event['requestContext']['authorizer']['claims']['cognito:username']
-    else:
-        return {
-            'statusCode': 401,
-            'body': 'invalid token',
-            'isBase64Encoded': False
-        }
+    user_id = fetch_user_id_from_event(event)
 
-    payload = {}
     try:
-        payload = json.loads(event['body'])
-        with open(os.path.dirname(__file__) + '/update.json') as f:
-            schema = json.load(f)
-            validate(payload, schema)
-        task_id = event['pathParameters']['task_id']
+        payload = convert_payload(event)
+        task_id = fetch_task_id(event)
         task = Task.get(user_id, task_id)
         converted_task = convert_savable(task, payload)
         response = converted_task.save(user_id)
-        return {
-            'statusCode': 201,
-            'body': json.dumps(response),
-            'isBase64Encoded': False
-        }
+        return convert_return_object(201, response)
+    except UserNotFoundError as e:
+        logging.error(e)
+        return convert_return_object(400, 'user not found error')
+    except InvalidTaskIdError as e:
+        logging.error(e)
+        return convert_return_object(400, 'invalid request')
     except ValidationError as e:
         logging.error(e)
-        return {
-            'statusCode': 400,
-            'body': 'invalid parameter',
-            'isBase64Encoded': False
-        }
+        return convert_return_object(400, 'invalid parameter')
     except TaskNotFoundError as e:
         logging.error(e)
-        return {
-            'statusCode': 404,
-            'body': 'task is not found',
-            'isBase64Encoded': False
-        }
+        return convert_return_object(404, 'task is not found')
     except Exception as e:
         logging.error(e)
-        return {
-            'statusCode': 400,
-            'body': 'unexpected error',
-            'isBase64Encoded': False
-        }
+        return convert_return_object(400, 'unexpected error')

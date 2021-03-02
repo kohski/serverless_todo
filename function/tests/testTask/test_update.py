@@ -12,58 +12,15 @@ table = dynamodb.Table(os.environ['TABLE_NAME'])
 # ------------------------------------------
 #               valid pattern
 # ------------------------------------------
-VALID_PRIORITY_LIST = [
-    "high",
-    "medium",
-    "low"
-]
 
-VALID_IS_DONE_LIST = [
-    True,
-    False
-]
-
-VALID_CONTENT_LIST = [
-    None,
-    "",
-    "修正後内容"
-]
-
-
-@pytest.fixture(params=VALID_PRIORITY_LIST)
-def valid_priority_params(request):
-    return request.param
-
-
-@pytest.fixture(params=VALID_IS_DONE_LIST)
-def valid_is_done_params(request):
-    return request.param
-
-
-@pytest.fixture(params=VALID_CONTENT_LIST)
-def valid_content_params(request):
-    return request.param
-
-
-@pytest.fixture
-def valid_task(valid_priority_params, valid_is_done_params, valid_content_params):
-    return {
-        "description": "valid case",
-        "path_parameters": {
-            "task_id": "ABCDEFGHIJKLMNOPQRSTUVW000"
-        },
-        'payload': {
-            "title": "修正後タイトル",
-            "priority": valid_priority_params,
-            "is_done": valid_is_done_params,
-            "content": valid_content_params
-        }
-    }
-
-
-@pytest.fixture()
-def valid_event(valid_task):
-    return {
+@pytest.mark.parametrize("word,is_done,priority", [
+    (word, is_done, priority)
+    for word in [None, "", "修正後内容"]
+    for is_done in ['true', 'false']
+    for priority in ['high', 'medium', 'low']
+])
+def test_existing_task_and_requested_by_task_owner(word, is_done, priority, context, ulid_mock):
+    event = {
         "resource": "/task/",
         "path": "/task",
         "httpMethod": 'POST',
@@ -72,7 +29,7 @@ def valid_event(valid_task):
         "queryStringParameters": None,
         "multiValueQueryStringParameters": None,
         "pathParameters": {
-            "task_id": valid_task['path_parameters']['task_id']
+            "task_id": "ABCDEFGHIJKLMNOPQRSTUVW000"
         },
         "stageVariables": None,
         "requestContext": {
@@ -96,13 +53,15 @@ def valid_event(valid_task):
             "requestTimeEpoch": int(datetime.now().timestamp()),
             "identity": {}
         },
-        "body": json.dumps(valid_task['payload']),
+        "body": json.dumps({
+            "title": "修正後タイトル",
+            "priority": priority,
+            "is_done": is_done,
+            "content": word
+        }),
         "isBase64Encoded": False
     }
-
-
-def test_existing_task_and_requested_by_task_owner(valid_event, context, ulid_mock):
-    response = lambda_handler(valid_event, context)
+    response = lambda_handler(event, context)
     del response['body']
     assert response == {
         'statusCode': 201,
@@ -159,7 +118,7 @@ def not_found_event():
         "body": json.dumps({
             "title": "タイトル",
             "priority": "medium",
-            "is_done": True,
+            "is_done": 'true',
             "content": "内容"
         }),
         "isBase64Encoded": False
@@ -201,25 +160,7 @@ INVALID_PAYLOAD_LIST = [
 
 
 @pytest.fixture(params=INVALID_PAYLOAD_LIST)
-def invalid_payload(request):
-    return request.param
-
-
-@pytest.fixture
-def invalid_task(invalid_payload):
-    return {
-        "description": "invalid case",
-        'payload': {
-            "title": invalid_payload.get('title'),
-            "priority": "medium" if invalid_payload.get('priority') is None else invalid_payload.get('priority'),
-            "is_done": True if invalid_payload.get('is_done') is None else invalid_payload.get('is_done'),
-            "content": "内容" if invalid_payload.get('content') is None else invalid_payload.get('content')
-        }
-    }
-
-
-@pytest.fixture()
-def invalid_event(invalid_task):
+def invalid_event(request):
     return {
         "resource": "/task/",
         "path": "/task",
@@ -251,7 +192,12 @@ def invalid_event(invalid_task):
             "requestTimeEpoch": int(datetime.now().timestamp()),
             "identity": {}
         },
-        "body": json.dumps(invalid_task['payload']),
+        "body": json.dumps({
+            "title": request.param.get('title'),
+            "priority": "medium" if request.param.get('priority') is None else request.param.get('priority'),
+            "is_done": 'true' if request.param.get('is_done') is None else request.param.get('is_done'),
+            "content": "内容" if request.param.get('content') is None else request.param.get('content')
+        }),
         "isBase64Encoded": False
     }
 
