@@ -28,8 +28,6 @@ cdk deploy -c domain_name="{domain_name}" \
 --profile {profile_name}
 ```
 
-
-
 ## userの作成
 0. Userの作成にはAWS CLIを使用する
 
@@ -90,27 +88,34 @@ cdk deploy -c domain_name="{domain_name}" \
       ```
 6. APIリクエスト  
   ログインのレスポンスのidTokenをAPI HeaderのAuthorizationヘッダーに格納して、APIリクエストする
+  api_endpointとして、https://todo.kohski.info を開放しています。
   コマンド例
   ```bash
+  # Login
+  curl -X POST -d '{"username":"test_user", "password":"Abcd1234#"}' \
+  https://{api_endpoint}/auth/login
+
   # 新規のタスクの作成
   $ curl -X POST -H "Authorization: {id_token}" \
   -d '{"title":"test from cli", "content":"test command", "is_done": "false", "priority": "high"}' \
-  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/
+  https://{api_endpoint}/task/
 
   # タスクの取得
   $ curl -X GET -H "Authorization: {id_token}" \
-  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/{task_id}
+  https://{api_endpoint}/task/{task_id}
 
   # タスクの修正
   $ curl -X POST -H "Authorization: {id_token}" \
   -d '{"title":"test from cli modifiesd", "content":"test command modifiesd", "is_done": "true", "priority": "medium"}' \
-  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/{task_id}
+  https://{api_endpoint}/task/{task_id}
 
   # タスクの削除
   $ curl -X DELETE -H "Authorization: {id_token}" \
   -d '{"title":"test from cli modifiesd", "content":"test command modifiesd", "is_done": "true", "priority": "medium"}' \
-  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/{task_id}
+  https://{api_endpoint}/task/{task_id}
   ```
+
+
 
 
 # ドキュメント関連
