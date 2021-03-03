@@ -81,6 +81,28 @@ $ cdk deploy --profile {profile_name}
       ```
 6. APIリクエスト  
   ログインのレスポンスのidTokenをAPI HeaderのAuthorizationヘッダーに格納して、APIリクエストする
+  コマンド例
+  ```bash
+  # 新規のタスクの作成
+  $ curl -X POST -H "Authorization: {id_token}" \
+  -d '{"title":"test from cli", "content":"test command", "is_done": "false", "priority": "high"}' \
+  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/
+
+  # タスクの取得
+  $ curl -X GET -H "Authorization: {id_token}" \
+  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/{task_id}
+
+  # タスクの修正
+  $ curl -X POST -H "Authorization: {id_token}" \
+  -d '{"title":"test from cli modifiesd", "content":"test command modifiesd", "is_done": "true", "priority": "medium"}' \
+  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/{task_id}
+
+  # タスクの削除
+  $ curl -X DELETE -H "Authorization: {id_token}" \
+  -d '{"title":"test from cli modifiesd", "content":"test command modifiesd", "is_done": "true", "priority": "medium"}' \
+  https://rmp14p63v5.execute-api.ap-northeast-1.amazonaws.com/prod/task/{task_id}
+  ```
+
 
 # ドキュメント関連
 
