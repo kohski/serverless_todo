@@ -9,7 +9,7 @@ from search import lambda_handler
     for d in ['true', 'false']
     for p in ['high', 'medium', 'low']
 ])
-def test_valid_search(word, is_done, priority, context):
+def test_valid_search(word, is_done, priority, context, create_init_ddb_data):
     username = 'existing_user_id'
     query_string = '?freeword={word}&is_done={is_done}&priority={priority}'.format(
         word=word, is_done=is_done, priority=priority)
@@ -51,8 +51,8 @@ def test_valid_search(word, is_done, priority, context):
         "isBase64Encoded": False
     }
     response = lambda_handler(event, context)
-    del response['body']
     assert response == {
         'statusCode': 200,
+        'body': response['body'],
         'isBase64Encoded': False
     }
