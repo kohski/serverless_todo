@@ -1,13 +1,11 @@
-swagger: "2.0"
+openapi: 3.0.3
 info:
   description: Serverless Todo list
   version: 1.0.0
   title: Serverless Todo list
-
 tags:
   - name: task
     description: タスクのエンティティ
-
 paths:
   /task:
     post:
@@ -15,86 +13,79 @@ paths:
         - task
       summary: タスクの作成
       description: タスクの新規作成
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: TaskUpdateItem
-          description: 更新したタスクのbody
-          schema:
-            $ref: "#/definitions/TaskUpdateItem"
+      requestBody:
+        $ref: "#/components/requestBodies/TaskUpdateItem"
       responses:
-        201:
+        "201":
           description: タスクの更新完了
-          schema:
-            $ref: "#/definitions/TaskItem"
-        404:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskItem"
+        "404":
           description: 該当するタスクがない
-  /task/{task_id}:
+  "/task/{task_id}":
     get:
       tags:
         - task
       summary: 単一のタスクを取得する
       description: |
         idを指定して、単一のタスクを取得
-      produces:
-        - application/json
       parameters:
         - in: path
           name: task_id
           description: 取得したいタスクのID
           required: true
-          type: string
-
-      responses:
-        200:
-          description: 該当するタスクがある
           schema:
-            $ref: "#/definitions/TaskItem"
-        404:
+            type: string
+      responses:
+        "200":
+          description: 該当するタスクがある
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskItem"
+        "404":
           description: 該当するタスクがない
     post:
       tags:
         - task
       summary: タスクの更新
       description: idを指定して、タスクの更新
-      produces:
-        - application/json
       parameters:
         - in: path
           name: task_id
           description: 更新したいタスクのID
           required: true
-          type: string
-        - in: body
-          name: TaskUpdateItem
-          description: 更新したタスクのbody
           schema:
-            $ref: "#/definitions/TaskUpdateItem"
+            type: string
+      requestBody:
+        $ref: "#/components/requestBodies/TaskUpdateItem"
       responses:
-        201:
+        "201":
           description: タスクの更新完了
-          schema:
-            $ref: "#/definitions/TaskItem"
-        404:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskItem"
+        "404":
           description: 該当するタスクがない
     delete:
       tags:
         - task
       summary: タスクの削除
       description: idを指定して、タスクを削除する
-      produces:
-        - application/json
       parameters:
         - in: path
           name: task_id
           description: 更新したいタスクのID
           required: true
-          type: string
+          schema:
+            type: string
       responses:
-        200:
+        "200":
           description: タスクの削除完了
-        404:
+        "404":
           description: 該当するタスクがない
   /tasks:
     get:
@@ -104,108 +95,122 @@ paths:
       operationId: searchInventory
       description: |
         idを指定して、単一のタスクを取得
-      produces:
-        - application/json
       parameters:
         - in: query
           name: freeword
-          description: "検索語句"
-          type: string
+          description: 検索語句
+          schema:
+            type: string
         - in: query
           name: is_done
           description: 完了かどうか
-          type: string
-          enum:
-            - "true"
-            - "false"
-            - "both"
+          schema:
+            type: string
+            enum:
+              - "true"
+              - "false"
+              - both
         - in: query
           name: priority
           description: 重要度
+          schema:
+            type: string
+            enum:
+              - high
+              - medium
+              - low
+      responses:
+        "200":
+          description: 該当するタスクがある
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskItem"
+        "400":
+          description: パラメータが不正な場合
+        "404":
+          description: 該当するタスクがない
+components:
+  requestBodies:
+    TaskUpdateItem:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/TaskUpdateItem"
+      description: 更新したタスクのbody
+  schemas:
+    TaskItem:
+      type: object
+      required:
+        - id
+        - title
+        - owner
+        - created_at
+        - is_done
+        - priority
+      properties:
+        id:
+          type: string
+          description: ulid
+          example: ABCDEFGHIJKLMNOPQRSTUVW000
+        title:
+          type: string
+          example: 宿題をする
+          minLength: 1
+          maxLength: 100
+        owner:
+          type: string
+          example: test_user
+          minLength: 1
+          maxLength: 100
+        content:
+          type: string
+          example: テキストの100ページまでやる
+          minLength: 0
+          maxLength: 2000
+        is_done:
+          type: boolean
+          example: true
+        priority:
           type: string
           enum:
             - high
             - medium
             - low
-      responses:
-        200:
-          description: 該当するタスクがある
-          schema:
-            type: array
-            items:
-              $ref: "#/definitions/TaskItem"
-        404:
-          description: 該当するタスクがない
-        400:
-          description: パラメータが不正な場合
-definitions:
-  TaskItem:
-    type: object
-    required:
-      - id
-      - title
-      - owner
-      - created_at
-      - is_done
-      - priority
-    properties:
-      id:
-        type: string
-        description: ulid
-        example: "ABCDEFGHIJKLMNOPQRSTUVW000"
-      title:
-        type: string
-        example: 宿題をする
-        minLength: 1
-        maxLength: 100
-      owner:
-        type: string
-        example: test_user
-        minLength: 1
-        maxLength: 100
-      content:
-        type: string
-        example: "テキストの100ページまでやる"
-        minLength: 0
-        maxLength: 2000
-      is_done:
-        type: boolean
-        example: true
-      priority:
-        type: string
-        enum:
-          - high
-          - medium
-          - low
-      created_at:
-        type: number
-        description: timestamp
-        example: 1614260292.838746
-      updated_at:
-        type: number
-        description: timestamp
-        example: 1614260292.838746
-  TaskUpdateItem:
-    type: object
-    required:
-      - title
-      - is_done
-      - priority
-    properties:
-      title:
-        type: string
-        minLength: 1
-        maxLength: 100
-      content:
-        type: string
-        minLength: 1
-        maxLength: 2000
-      is_done:
-        type: boolean
-        example: true
-      priority:
-        type: string
-        enum:
-          - high
-          - medium
-          - low
+        created_at:
+          type: number
+          description: timestamp
+          example: 1614260292.838746
+        updated_at:
+          type: number
+          description: timestamp
+          example: 1614260292.838746
+    TaskUpdateItem:
+      type: object
+      required:
+        - title
+        - is_done
+        - priority
+      properties:
+        title:
+          type: string
+          example: 宿題をする
+          minLength: 1
+          maxLength: 100
+        content:
+          type: string
+          example: テキストの100ページまでやる
+          minLength: 1
+          maxLength: 2000
+        is_done:
+          type: boolean
+          example: true
+        priority:
+          type: string
+          example: medium
+          enum:
+            - high
+            - medium
+            - low
