@@ -23,10 +23,11 @@ def convert_payload(event):
     with open(os.path.dirname(__file__) + '/update.json') as f:
         schema = json.load(f)
         validate(payload, schema)
-    if payload['is_done'] == 'true':
-        payload['is_done'] = True
-    elif payload['is_done'] == 'false':
-        payload['is_done'] = False
+    if type(payload['is_done']) == str:
+        if payload['is_done'] == 'true':
+            payload['is_done'] = True
+        else:
+            payload['is_done'] = False
     return payload
 
 
