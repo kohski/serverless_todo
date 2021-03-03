@@ -196,7 +196,8 @@ class Task:
                 if filter_info is None:
                     filter_info = Attr('is_done').eq(converted_is_done)
                 else:
-                    filter_info = filter_info & Attr('is_done').eq(is_done)
+                    filter_info = filter_info & Attr(
+                        'is_done').eq(converted_is_done)
         if priority is not None:
             if filter_info is None:
                 filter_info = Attr('priority').eq(priority)

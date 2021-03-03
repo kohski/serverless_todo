@@ -322,9 +322,13 @@ class TestSearch:
             priority=priority,
             is_done=is_done
         )
+        if is_done == 'true':
+            converted_is_done = True
+        elif is_done == 'false':
+            converted_is_done = False
         assert all([
             (word in x['title'] or word in x['content'])
-            and x['is_done'] is is_done
+            and x['is_done'] is converted_is_done
             and x['priority'] == priority
             and x['owner'] == user_id
             for x in tasks
