@@ -20,6 +20,15 @@ $ pip install -r requirements.txt
 ```bash
 $ cdk deploy --profile {profile_name}
 ```
+hosted_zone, domain_name, acm_arnがセットアップ済みの場合は以下のコマンドで独自ドメインを当てられる
+```bash
+cdk deploy -c domain_name="{domain_name}" \
+-c acm_arn="{acm_arn}" \
+-c hosted_zone="{hosted_zone}" \
+--profile im-manage
+```
+
+
 
 ## userの作成
 0. Userの作成にはAWS CLIを使用する

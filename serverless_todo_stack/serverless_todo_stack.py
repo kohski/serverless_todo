@@ -5,6 +5,8 @@ from aws_cdk import (
     aws_logs as logs,
     aws_iam as iam,
     aws_apigateway as apigw,
+    aws_route53 as route53,
+    aws_certificatemanager as acm,
     core
 )
 
@@ -61,15 +63,16 @@ class TodoStack(core.Stack):
         # -----------------------------------
         #           dynamodb
         # -----------------------------------
-        dynamodbTable = dynamodb.Table(self, "TaskTable",
-                                       partition_key=dynamodb.Attribute(
-                                           name="id", type=dynamodb.AttributeType.STRING),
-                                       sort_key=dynamodb.Attribute(
-                                           name="meta", type=dynamodb.AttributeType.STRING),
-                                       billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-                                       point_in_time_recovery=True,
-                                       server_side_encryption=True
-                                       )
+        dynamodbTable = dynamodb.Table(
+            self, "TaskTable",
+            partition_key=dynamodb.Attribute(
+                name="id", type=dynamodb.AttributeType.STRING),
+            sort_key=dynamodb.Attribute(
+                name="meta", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            point_in_time_recovery=True,
+            server_side_encryption=True
+        )
         dynamodbTable.add_global_secondary_index(
             partition_key=dynamodb.Attribute(
                 name="meta", type=dynamodb.AttributeType.STRING),
@@ -88,27 +91,64 @@ class TodoStack(core.Stack):
         # -----------------------------------
         #             apigateway
         # -----------------------------------
+        acm_arn = self.node.try_get_context('acm_arn')
+        domain_name = self.node.try_get_context("domain_name")
+        hosted_zone = self.node.try_get_context("hosted_zone")
+
         api_policy = iam.PolicyDocument(statements=iam.PolicyStatement(
             actions=[
                 "lambda:InvokeFunction"
             ],
         ).add_resources("arn:aws:lambda:{}:{}:function:*".format(self.region, self.account)))
 
-        api = apigw.RestApi(self, 'API',
-                            deploy_options=apigw.StageOptions(
-                                metrics_enabled=True
-                            ),
-                            policy=api_policy,
-                            rest_api_name="Serverless TODO API",
-                            endpoint_types=[apigw.EndpointType.REGIONAL],
-                            default_cors_preflight_options=apigw.CorsOptions(
-                                allow_origins=apigw.Cors.ALL_ORIGINS,  # TODO: Temporary for development
-                                allow_headers=["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key",
-                                               "X-Amz-Security-Token", "X-Tracing-Id", "x-jeffy-correlation-id", "x-amzn-trace-id"],
-                                allow_methods=apigw.Cors.ALL_METHODS,
-                                allow_credentials=True
-                            )
-                            )
+        if acm_arn and domain_name and hosted_zone:
+
+            api = apigw.RestApi(self, 'API',
+                                domain_name=apigw.DomainNameOptions(
+                                    certificate=acm.Certificate.from_certificate_arn(
+                                        self, 'ApiCertificate', acm_arn),
+                                    domain_name=domain_name,
+                                    endpoint_type=apigw.EndpointType.REGIONAL
+                                ),
+                                deploy_options=apigw.StageOptions(
+                                    metrics_enabled=True
+                                ),
+                                policy=api_policy,
+                                rest_api_name="Serverless TODO API",
+                                endpoint_types=[apigw.EndpointType.REGIONAL],
+                                default_cors_preflight_options=apigw.CorsOptions(
+                                    allow_origins=apigw.Cors.ALL_ORIGINS,  # TODO: Temporary for development
+                                    allow_headers=["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key",
+                                                   "X-Amz-Security-Token", "X-Tracing-Id", "x-jeffy-correlation-id", "x-amzn-trace-id"],
+                                    allow_methods=apigw.Cors.ALL_METHODS,
+                                    allow_credentials=True
+                                )
+                                )
+            route53.CfnRecordSet(self, "apiDomainRecord",
+                                 name=domain_name,
+                                 type="A",
+                                 alias_target={
+                                     "dnsName": api.domain_name.domain_name_alias_domain_name,
+                                     "hostedZoneId": api.domain_name.domain_name_alias_hosted_zone_id
+                                 },
+                                 hosted_zone_id=hosted_zone,
+                                 )
+        else:
+            api = apigw.RestApi(self, 'API',
+                                deploy_options=apigw.StageOptions(
+                                    metrics_enabled=True
+                                ),
+                                policy=api_policy,
+                                rest_api_name="Serverless TODO API",
+                                endpoint_types=[apigw.EndpointType.REGIONAL],
+                                default_cors_preflight_options=apigw.CorsOptions(
+                                    allow_origins=apigw.Cors.ALL_ORIGINS,  # TODO: Temporary for development
+                                    allow_headers=["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key",
+                                                   "X-Amz-Security-Token", "X-Tracing-Id", "x-jeffy-correlation-id", "x-amzn-trace-id"],
+                                    allow_methods=apigw.Cors.ALL_METHODS,
+                                    allow_credentials=True
+                                )
+                                )
 
         cognito_authorizer = apigw.CognitoUserPoolsAuthorizer(
             self,
