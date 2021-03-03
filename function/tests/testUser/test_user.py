@@ -1,9 +1,7 @@
 import pytest
 from copy import deepcopy
 from user import User, UserNotFoundError, NotAuthorizedError
-import uuid
 from jsonschema import ValidationError
-from botocore.exceptions import ClientError
 
 
 @pytest.fixture
@@ -66,7 +64,7 @@ class TestUser:
 
 class TestLogin:
 
-    def test_login(self, idp_create_init_data):
+    def test_username_login(self, idp_create_init_data):
         res = User.login('existing_user_id', 'Test1234#')
         assert 'AuthenticationResult' in res and 'IdToken' in res['AuthenticationResult']
 

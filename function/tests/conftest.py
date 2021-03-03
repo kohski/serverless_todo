@@ -190,6 +190,7 @@ def idp_setup(start_moto_mock):
             'email'
         ],
         AliasAttributes=[
+            'username',
             'email'
         ],
         AdminCreateUserConfig={
