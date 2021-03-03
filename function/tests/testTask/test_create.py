@@ -16,7 +16,7 @@ table = dynamodb.Table(os.environ['TABLE_NAME'])
 @pytest.mark.parametrize("word,is_done,priority", [
     (word, is_done, priority)
     for word in ['A', '内容', '']
-    for is_done in ['true', 'false']
+    for is_done in ['true', 'false', True, False]
     for priority in ['high', 'medium', 'low']
 ])
 def test_existing_task_and_requested_by_task_owner(word, is_done, priority, context, ulid_mock):

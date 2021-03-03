@@ -27,10 +27,17 @@
       ]
     },
     "is_done": {
-      "type": "string",
-      "enum": [
-        "true",
-        "false"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        },
+        {
+          "type": "boolean"
+        }
       ]
     },
     "priority": {

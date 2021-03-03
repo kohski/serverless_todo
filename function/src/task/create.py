@@ -15,10 +15,11 @@ def convert_payload(event, user_id):
     payload['id'] = None
     payload['meta'] = 'latest'
     payload['owner'] = user_id
-    if payload['is_done'] == 'true':
-        payload['is_done'] = True
-    else:
-        payload['is_done'] = False
+    if type(payload['is_done']) == str:
+        if payload['is_done'] == 'true':
+            payload['is_done'] = True
+        else:
+            payload['is_done'] = False
     return payload
 
 
