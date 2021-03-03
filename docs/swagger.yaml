@@ -13,8 +13,8 @@ paths:
     post:
       tags:
         - task
-      summary: タスクの更新
-      description: idを指定して、タスクの更新
+      summary: タスクの作成
+      description: タスクの新規作成
       produces:
         - application/json
       parameters:
