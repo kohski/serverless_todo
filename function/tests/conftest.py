@@ -8,7 +8,8 @@ DEFAULT_TIME = '2021-03-04T15:00:00'
 
 env = {
     "TABLE_NAME": "DummyTable",
-    "USER_POOL_ID": "UserPoolId"
+    "USER_POOL_NAME": "UserPoolId",
+    "CLIENT_NAME": "ClientId"
 }
 
 for k in env:
@@ -102,7 +103,9 @@ users = [
         "id": "existing_user_id",
         "given_name": "テスト",
         "family_name": "ユーザー",
-        "email": "test@test.com"
+        "email": "test@test.com",
+        "password": "Test1234#",
+        "email_verified": "true"
     }
 ]
 
@@ -172,7 +175,7 @@ def create_init_ddb_data(ddb_setup):
 def idp_setup(start_moto_mock):
     idp = boto3.client('cognito-idp')
     userpool = idp.create_user_pool(
-        PoolName='ServerlessTodoUserPool',
+        PoolName=env['USER_POOL_NAME'],
         Policies={
             'PasswordPolicy': {
                 'MinimumLength': 6,
@@ -187,6 +190,7 @@ def idp_setup(start_moto_mock):
             'email'
         ],
         AliasAttributes=[
+            'username',
             'email'
         ],
         AdminCreateUserConfig={
@@ -208,6 +212,15 @@ def idp_setup(start_moto_mock):
         ]
     )
     os.environ['USER_POOL_ID'] = userpool['UserPool']['Id']
+
+    client = idp.create_user_pool_client(
+        UserPoolId=userpool['UserPool']['Id'],
+        ClientName=os.environ["CLIENT_NAME"],
+        ExplicitAuthFlows=[
+            'ADMIN_NO_SRP_AUTH'
+        ]
+    )
+    os.environ['CLIENT_ID'] = client['UserPoolClient']['ClientId']
 
 
 @pytest.fixture()
@@ -231,10 +244,37 @@ def idp_create_init_data(idp_setup):
                 {
                     'Name': 'email',
                     'Value': user['email']
+                },
+                {
+                    'Name': 'email_verified',
+                    'Value': user['email_verified']
                 }
             ],
             'DesiredDeliveryMediums': [
                 'EMAIL',
             ],
+            'TemporaryPassword': user["password"]
         }
         idp.admin_create_user(**param)
+        res = idp.admin_initiate_auth(
+            UserPoolId=os.environ['USER_POOL_ID'],
+            ClientId=os.environ['CLIENT_ID'],
+            AuthFlow='ADMIN_NO_SRP_AUTH',
+            AuthParameters={
+                'USERNAME': user["id"],
+                'PASSWORD': user["password"]
+            }
+        )
+
+        idp.respond_to_auth_challenge(
+            ClientId=os.environ['CLIENT_ID'],
+            ChallengeName='NEW_PASSWORD_REQUIRED',
+            ChallengeResponses={
+                'NEW_PASSWORD': user["password"],
+                'USERNAME': user["id"],
+                'userAttributes.given_name': user['given_name'],
+                'userAttributes.family_name': user['family_name'],
+                'userAttributes.email': user['email']
+            },
+            Session=res['Session']
+        )

@@ -53,7 +53,7 @@ class TodoStack(core.Stack):
                 )
             )
         )
-        userpool.add_client(
+        user_pool_client = userpool.add_client(
             "UserPoolClient",
             auth_flows=cognito.AuthFlow(
                 admin_user_password=True
@@ -183,7 +183,9 @@ class TodoStack(core.Stack):
         # -----------------------------------
         env = {
             "TABLE_NAME": dynamodbTable.table_name,
-            "USER_POOL_ID": userpool.user_pool_id
+            "USER_POOL_ID": userpool.user_pool_id,
+            "USER_POOL_NAME": userpool.user_pool_provider_name,
+            "CLIENT_ID": user_pool_client.user_pool_client_id
         }
 
         # -----------------------------------
@@ -372,4 +374,40 @@ class TodoStack(core.Stack):
             "GET", integration=search_task_integration,
             authorization_type=apigw.AuthorizationType.COGNITO,
             authorizer=cognito_authorizer,
+        )
+
+        # -----------------------------------
+        #           login handler
+        # -----------------------------------
+        login_resource_base_name = "loginFunction"
+        login_task_func = lambda_.Function(self, login_resource_base_name,
+                                           code=lambda_.Code.from_asset('function/src/user',
+                                                                        bundling=core.BundlingOptions(
+                                                                            image=lambda_.Runtime.PYTHON_3_8.bundling_docker_image,
+                                                                            command=[
+                                                                                'bash', '-c', 'pip install -r requirements.txt -t /asset-output && cp -a . /asset-output'],
+                                                                        )),
+                                           handler="login.lambda_handler",
+                                           runtime=lambda_.Runtime.PYTHON_3_8,
+                                           environment=env,
+                                           tracing=lambda_.Tracing.ACTIVE,
+                                           timeout=core.Duration.seconds(
+                                               29),
+                                           memory_size=512
+                                           )
+
+        login_task_func.add_to_role_policy(statement=iam.PolicyStatement(
+            actions=['cognito-idp:AdminInitiateAuth'], resources=[userpool.user_pool_arn]))
+        logs.LogGroup(self, login_resource_base_name + 'LogGroup',
+                      log_group_name='/aws/lambda/' + login_task_func.function_name,
+                      retention=logs.RetentionDays.TWO_WEEKS
+                      )
+
+        login_task_integration = apigw.LambdaIntegration(
+            login_task_func
+        )
+        auth_path = api.root.add_resource("auth")
+        auth_login_path = auth_path.add_resource("login")
+        auth_login_path.add_method(
+            "POST", integration=login_task_integration
         )

@@ -1,14 +1,13 @@
 import pytest
 from copy import deepcopy
-from user import User
-import uuid
+from user import User, UserNotFoundError, NotAuthorizedError
 from jsonschema import ValidationError
 
 
 @pytest.fixture
 def typical_user():
     return {
-        'id': str(uuid.uuid4()),
+        'id': '2340725f-125b-429b-ba17-6c598b539b63',
         'email': 'hoge@hoge.com',
         'family_name': '田中',
         'given_name': '太郎'
@@ -61,3 +60,18 @@ class TestUser:
         copied_typical_user['given_name'] = 'a' * 101
         with pytest.raises(ValidationError):
             User(**copied_typical_user)
+
+
+class TestLogin:
+
+    def test_username_login(self, idp_create_init_data):
+        res = User.login('existing_user_id', 'Test1234#')
+        assert 'AuthenticationResult' in res and 'IdToken' in res['AuthenticationResult']
+
+    def test_raise_not_existing_user(self, idp_create_init_data):
+        with pytest.raises(UserNotFoundError):
+            User.login('not_existing_user_id', 'Test1234#')
+
+    def test_raise_not_valid_password(self, idp_create_init_data):
+        with pytest.raises(NotAuthorizedError):
+            User.login('existing_user_id', 'not_valid_password')

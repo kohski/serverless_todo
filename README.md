@@ -25,7 +25,7 @@ hosted_zone, domain_name, acm_arnがセットアップ済みの場合は以下�
 cdk deploy -c domain_name="{domain_name}" \
 -c acm_arn="{acm_arn}" \
 -c hosted_zone="{hosted_zone}" \
---profile im-manage
+--profile {profile_name}
 ```
 
 
