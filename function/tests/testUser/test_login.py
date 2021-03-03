@@ -38,10 +38,10 @@ def event(request_params):
         "httpMethod": "GET",
         "headers": {},
         "multiValueHeaders": {},
-        "queryStringParameters": request_params['body'],
+        "queryStringParameters": None,
         "multiValueQueryStringParameters": None,
         "stageVariables": None,
-        "body": None,
+        "body": json.dumps(request_params['body']),
         "isBase64Encoded": False
     }
 
@@ -52,10 +52,9 @@ def test_valid_login(event, context, request_params, idp_create_init_data):
     response = lambda_handler(event, context)
     body = json.loads(response['body'])
     assert response['statusCode'] == 200
-    assert 'AuthenticationResult' in body
-    assert'AccessToken' in body['AuthenticationResult']
-    assert'IdToken' in body['AuthenticationResult']
-    assert'RefreshToken' in body['AuthenticationResult']
+    assert'AccessToken' in body
+    assert'IdToken' in body
+    assert'RefreshToken' in body
 
 
 def test_raise_invalid_username(event, context, request_params, idp_create_init_data):

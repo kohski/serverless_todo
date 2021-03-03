@@ -3,11 +3,8 @@ from user import UserNotFoundError, NotAuthorizedError, User
 import json
 
 
-def fetch_query_string(event):
-    query_string = {}
-    if 'queryStringParameters' in event and event['queryStringParameters'] is not None:
-        query_string = event['queryStringParameters']
-    return query_string
+def fetch_params(event):
+    return json.loads(event['body'])
 
 
 def convert_return_object(ststus: int = 200, body: str = None, is_base64_encoded: bool = False):
@@ -27,10 +24,10 @@ def convert_return_object(ststus: int = 200, body: str = None, is_base64_encoded
 
 def lambda_handler(event, context):
     logging.info(event)
-    query_string = fetch_query_string(event)
+    query_string = fetch_params(event)
     try:
         response = User.login(**query_string)
-        return convert_return_object(200, response)
+        return convert_return_object(200, response.get('AuthenticationResult'))
     except UserNotFoundError as e:
         logging.error(e)
         return convert_return_object(401, 'user not found error')
