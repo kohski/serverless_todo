@@ -27,7 +27,7 @@ def fetch_user_id_from_event(event):
 
 def convert_return_object(ststus: int = 200, body: str = None, is_base64_encoded: bool = False):
     return_body = ''
-    if type(body) == dict:
+    if type(body) == dict or type(body) == list:
         return_body = json.dumps(body)
     elif type(body) == str:
         return_body = body
