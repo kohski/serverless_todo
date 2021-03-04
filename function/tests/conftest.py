@@ -2,6 +2,8 @@ import pytest
 import moto
 import boto3
 import os
+from datetime import datetime
+from decimal import Decimal
 
 
 DEFAULT_TIME = '2021-03-04T15:00:00'
@@ -111,7 +113,7 @@ users = [
 
 
 @pytest.fixture(autouse=True)
-def create_init_ddb_data(ddb_setup):
+def create_init_ddb_data(ddb_setup, set_time):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(os.environ['TABLE_NAME'])
 
@@ -161,8 +163,8 @@ def create_init_ddb_data(ddb_setup):
             "id": "Task:ABCDEFGHIJKLMNOPQRSTUVW{}".format(str(id).zfill(3)),
             "title": item['title'],
             "owner": item['user_id'],
-            "created_at": 1614342166,
-            "updated_at": 1614342166,
+            "created_at": Decimal(datetime.now().timestamp()),
+            "updated_at": Decimal(datetime.now().timestamp()),
             "meta": "latest",
             "priority": item['priority'],
             "is_done": item['is_done'],
